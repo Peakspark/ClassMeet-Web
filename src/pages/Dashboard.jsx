@@ -11,6 +11,9 @@ import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
  import QuickActions from "../components/QuickActions";
 
+ import { useState } from "react";
+import JoinMeetingModal from "../components/JoinMeetingModal";
+
 function Dashboard() {
   const meetings = [
     {
@@ -58,6 +61,8 @@ function Dashboard() {
       time: "1 hour ago",
     },
   ];
+
+  const [showJoinModal, setShowJoinModal] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#F0FDFA]">
@@ -148,10 +153,14 @@ function Dashboard() {
                       </div>
 
                       {/* Join */}
-                      <button className="flex items-center gap-2 rounded-lg bg-[#0F766E] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#134E4A]">
-                        <Video size={15} />
-                        Join
-                      </button>
+                      {/* Join Button */}
+<button
+  onClick={() => setShowJoinModal(true)}
+  className="flex items-center gap-2 rounded-lg bg-[#0F766E] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#134E4A]"
+>
+  <Video size={15} />
+  Join
+</button>
 
                     </div>
 
@@ -232,8 +241,15 @@ function Dashboard() {
 
       </main>
 
+          <JoinMeetingModal
+      isOpen={showJoinModal}
+      onClose={() => setShowJoinModal(false)}
+    />
+
     </div>
   );
 }
+
+
 
 export default Dashboard;
