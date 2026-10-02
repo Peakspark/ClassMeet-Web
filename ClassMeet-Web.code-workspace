@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "ClassMeet-Web",
+			"path": "."
+		},
+		{
+			"name": "bin",
+			"path": "../course-selling-app/bin"
+		}
+	],
+	"settings": {}
+}
