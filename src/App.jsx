@@ -5,6 +5,7 @@ import QuickActions from './components/QuickActions';
 import Header from "./components/Header";
 import VirtualOffice from "./components/VirtualOffice";
 import Signup from "./pages/Signup";
+import Login from "./pages/Login";
 
 
 function Dashboard() {
@@ -29,6 +30,7 @@ function App() {
       <Route path="/" element={<Dashboard />} />
 
       <Route path="/signup" element={<Signup />} />
+      <Route path="/login" element={<Login />} />
 
     </Routes>
   );
