@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head><title>Realtime test</title></head>
+<body>
+  <h3>Realtime test</h3>
+  <p id="status">Connecting...</p>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    socket.on('connect', () => {
+      document.getElementById('status').textContent = 'Connected: ' + socket.id;
+    });
+    socket.on('disconnect', () => {
+      document.getElementById('status').textContent = 'Disconnected';
+    });
+  </script>
+</body>
+</html>
