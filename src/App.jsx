@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Sidebar from "./components/Sidebar";
-
+import QuickActions from './components/QuickActions';
 import Header from "./components/Header";
 
 function App() {
@@ -13,7 +13,7 @@ function App() {
       <main className="ml-64">
 
         <Header />
-
+<QuickActions/>
       </main>   
 
     </div>
