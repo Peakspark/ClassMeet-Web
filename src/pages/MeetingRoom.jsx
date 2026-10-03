@@ -4,6 +4,10 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import VideoTile from "../components/VideoTile";
 
+import MeetingControls from "../components/MeetingControls";
+import MeetingChat from "../components/MeetingChat";
+
+
 function MeetingRoom() {
   const navigate = useNavigate();
   const { roomId } = useParams();
@@ -349,61 +353,24 @@ function MeetingRoom() {
         )}
 
         {/* ================= CHAT PANEL ================= */}
-        {showChat && (
-          <aside className="absolute right-0 top-0 z-20 flex h-full w-80 flex-col border-l border-white/10 bg-[#172033]">
-
-            {/* Chat Header */}
-            <div className="border-b border-white/10 p-5">
-              <h2 className="font-semibold">
-                Meeting Chat
-              </h2>
-
-              <p className="mt-1 text-xs text-slate-400">
-                Messages from this meeting
-              </p>
-            </div>
-
-            {/* Messages */}
-            <div className="flex-1 space-y-4 overflow-y-auto p-5">
-
-              <div className="rounded-xl bg-white/10 p-3">
-                <p className="text-xs text-slate-400">
-                  Alex
-                </p>
-
-                <p className="mt-1 text-sm">
-                  Hello everyone!
-                </p>
-              </div>
-
-              <div className="rounded-xl bg-[#0F766E] p-3">
-                <p className="text-xs text-teal-100">
-                  Demo User
-                </p>
-
-                <p className="mt-1 text-sm">
-                  Hello! Good to see everyone.
-                </p>
-              </div>
-
-            </div>
-
-            {/* Chat Input */}
-            <div className="border-t border-white/10 p-4">
-
-              <input
-                type="text"
-                placeholder="Type a message..."
-                className="w-full rounded-lg bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400 focus:ring-1 focus:ring-[#14B8A6]"
-              />
-
-            </div>
-
-          </aside>
-        )}
+      {showChat && (
+  <MeetingChat
+    onClose={() => setShowChat(false)}
+  />
+)}
+        
 
       </main>
-
+<MeetingControls
+  micOn={micOn}
+  cameraOn={cameraOn}
+  isSharing={isSharing}
+  onToggleMic={toggleMic}
+  onToggleCamera={toggleCamera}
+  onToggleScreenShare={toggleScreenShare}
+  onCopyMeetingId={copyMeetingId}
+  onLeaveMeeting={leaveMeeting}
+/>
      
     </div>
   );
