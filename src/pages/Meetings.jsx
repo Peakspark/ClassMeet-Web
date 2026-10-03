@@ -40,28 +40,7 @@ function Meetings() {
     <div className="min-h-screen bg-[#F0FDFA]">
 
       {/* Header */}
-      <div className="border-b border-slate-200 bg-white px-8 py-6">
-
-        <div className="flex items-center justify-between">
-
-          <div>
-            <h1 className="text-2xl font-bold text-[#172033]">
-              Meetings
-            </h1>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Manage your upcoming and scheduled meetings
-            </p>
-          </div>
-
-          <button className="flex items-center gap-2 rounded-xl bg-[#0F766E] px-5 py-3 text-sm font-semibold text-white shadow-md shadow-teal-700/20 transition hover:bg-[#134E4A]">
-            <Video size={18} />
-            Join Meeting
-          </button>
-
-        </div>
-
-      </div>
+     
 
       {/* Content */}
       <div className="px-8 py-6">

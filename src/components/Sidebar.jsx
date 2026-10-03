@@ -1,19 +1,21 @@
 import { House,Video, MessageSquare, FolderKanban, BarChart3, Users, Settings, LogOut, GraduationCap,} from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 function Sidebar() {
   const menuItems = [
     {
       name: "Dashboard",
       icon: House,
-      active: true,
+      path: "/",
     },
     {
       name: "Meetings",
       icon: Video,
+      path:"/meetings",
     },
     {
       name: "Messages",
       icon: MessageSquare,
+       path: "/messages",
     },
     {
       name: "Projects",
@@ -29,6 +31,7 @@ function Sidebar() {
     },
   ];
 const navigate = useNavigate();
+const location = useLocation();
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col bg-[#134E4A] text-white">
 
@@ -55,16 +58,12 @@ const navigate = useNavigate();
             <button
               key={item.name}
                onClick={() => {
-    if (item.name === "Dashboard") {
-      navigate("/");
-    }
-
-    if (item.name === "Meetings") {
-      navigate("/meetings");
+    if (item.path ) {
+      navigate(item.path);
     }
   }}
               className={`group flex items-center gap-4 rounded-xl px-4 py-3.5 text-left transition-all duration-200 ${
-                item.active
+                location.pathname === item.path
                   ? "bg-[#0F766E] text-white shadow-lg shadow-black/10"
                   : "text-teal-100 hover:bg-white/10 hover:text-white"
               }`}
@@ -72,7 +71,7 @@ const navigate = useNavigate();
               <Icon
                 size={20}
                 className={`transition ${
-                  item.active
+                 location.pathname === item.path
                     ? "text-white"
                     : "text-teal-200 group-hover:text-white"
                 }`}

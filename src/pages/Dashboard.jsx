@@ -1,7 +1,7 @@
 import { CalendarDays, Clock, Video, MoreHorizontal, Users, CheckCircle2, ClipboardList, BarChart3,} from "lucide-react";
 
-import Sidebar from "../components/Sidebar";
-import Header from "../components/Header";
+// import Sidebar from "../components/Sidebar";
+// import Header from "../components/Header";
  import QuickActions from "../components/QuickActions";
 
  import { useState } from "react";
@@ -93,11 +93,11 @@ const [meetings, setMeetings] = useState( [
   return (
     <div className="min-h-screen bg-[#F0FDFA]">
 
-      <Sidebar />
+      {/* <Sidebar /> */}
 
-      <main className="ml-64 min-h-screen">
+      {/* <main className="ml-64 min-h-screen"> */}
 
-        <Header />
+        {/* <Header /> */}
 
         <div className="px-8 pb-10">
 
@@ -464,7 +464,7 @@ const [meetings, setMeetings] = useState( [
 
         </div>
 
-      </main>
+      {/* </main> */}
 
           <JoinMeetingModal
       isOpen={showJoinModal}

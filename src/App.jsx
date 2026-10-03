@@ -1,13 +1,14 @@
 import { Routes, Route } from "react-router-dom";
 import { useState } from 'react'
-// import Sidebar from "./components/Sidebar";
+import Sidebar from "./components/Sidebar";
 // import QuickActions from './components/QuickActions';
-// import Header from "./components/Header";
+import Header from "./components/Header";
 import VirtualOffice from "./components/VirtualOffice";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Meetings from "./pages/Meetings";
+import Messages from "./pages/Messages";
 
 // function Dashboard() {
 //   return (
@@ -21,6 +22,21 @@ import Meetings from "./pages/Meetings";
 //     </div>
 //   );
 // }
+function Layout({children}){
+  return(
+    <div className ="min-h-Screen bg-[#F0FDFA]">
+<Sidebar/>
+
+<main className="ml-64">
+
+  <Header />
+  {children}
+</main>
+
+
+    </div>
+  );
+}
 
 
 function App() {
@@ -28,8 +44,28 @@ function App() {
   return (
   <Routes>
 
-      <Route path="/" element={<Dashboard />} />
-<Route path="/meetings" element={<Meetings />} />
+      <Route path="/" element={
+        <Layout>
+             <Dashboard /> 
+          </Layout>
+
+        
+     
+    } />
+<Route path="/meetings" element={
+         <Layout>
+            <Meetings />
+          </Layout>
+} />
+
+<Route
+  path="/messages"
+  element={
+    <Layout>
+      <Messages />
+    </Layout>
+  }
+/>
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
 
