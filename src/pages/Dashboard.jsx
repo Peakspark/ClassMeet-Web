@@ -1,11 +1,4 @@
-import {
-  CalendarDays,
-  Clock,
-  Video,
-  MoreHorizontal,
-  Users,
-  CheckCircle2,
-} from "lucide-react";
+import { CalendarDays, Clock, Video, MoreHorizontal, Users, CheckCircle2,} from "lucide-react";
 
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
@@ -13,6 +6,8 @@ import Header from "../components/Header";
 
  import { useState } from "react";
 import JoinMeetingModal from "../components/JoinMeetingModal";
+import CreateRoomModal from "../components/CreateRoomModal";
+
 
 function Dashboard() {
   const meetings = [
@@ -64,6 +59,8 @@ function Dashboard() {
 
   const [showJoinModal, setShowJoinModal] = useState(false);
 
+  const [showCreateRoom, setShowCreateRoom] = useState(false);
+
   return (
     <div className="min-h-screen bg-[#F0FDFA]">
 
@@ -76,7 +73,16 @@ function Dashboard() {
         <div className="px-8 pb-10">
 
           {/* Quick Actions */}
-          <QuickActions />
+          <QuickActions
+          
+          
+            onJoinMeeting={() => setShowJoinModal(true)}
+         onCreateRoom={() => setShowCreateRoom(true)}
+          onScheduleMeeting={() => console.log("Schedule Meeting")}
+           onNewTask={() => console.log("New Task")}
+            onStartPoll={() => console.log("Start Poll")}
+          
+          />
 
           {/* Main Dashboard */}
           <div className="mt-8 grid grid-cols-3 gap-6">
@@ -245,6 +251,10 @@ function Dashboard() {
       isOpen={showJoinModal}
       onClose={() => setShowJoinModal(false)}
     />
+    <CreateRoomModal
+  isOpen={showCreateRoom}
+  onClose={() => setShowCreateRoom(false)}
+/>
 
     </div>
   );

@@ -6,7 +6,12 @@ import {
   BarChart3,
 } from "lucide-react";
 
-function QuickActions() {
+function QuickActions({
+  onJoinMeeting,
+  onCreateRoom,
+  OnScheduleMeeting,onNewTask,onStartPoll,
+
+}) {
   const actions = [
     {
       title: "Join Meeting",
@@ -14,6 +19,7 @@ function QuickActions() {
       icon: Video,
       iconBg: "bg-blue-100",
       iconColor: "text-blue-600",
+      onClick: onJoinMeeting,
     },
     {
       title: "Create Room",
@@ -21,6 +27,7 @@ function QuickActions() {
       icon: Plus,
       iconBg: "bg-purple-100",
       iconColor: "text-purple-600",
+      onClick:onCreateRoom,
     },
     {
       title: "Schedule Meeting",
@@ -28,6 +35,7 @@ function QuickActions() {
       icon: CalendarDays,
       iconBg: "bg-green-100",
       iconColor: "text-green-600",
+      onClick: OnScheduleMeeting,
     },
     {
       title: "New Task",
@@ -35,6 +43,7 @@ function QuickActions() {
       icon: ClipboardList,
       iconBg: "bg-orange-100",
       iconColor: "text-orange-600",
+      onClick : onNewTask,
     },
     {
       title: "Start Poll",
@@ -42,6 +51,7 @@ function QuickActions() {
       icon: BarChart3,
       iconBg: "bg-pink-100",
       iconColor: "text-pink-600",
+      onClick: onStartPoll,
     },
   ];
 
@@ -66,6 +76,7 @@ function QuickActions() {
           return (
             <button
               key={action.title}
+              onClick={action.onClick}
               className="group rounded-2xl bg-white p-5 text-left shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-md"
             >
 
