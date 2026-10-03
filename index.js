@@ -6,6 +6,8 @@ import helmet from "helmet";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import auth from "./middleware/auth.js";
+import workspaceRoutes from "./routes/workspaceRoutes.js";
+import meetingRoutes from "./routes/meetingRoutes.js";
 
 dotenv.config();
 
@@ -37,6 +39,8 @@ app.get("/api/auth/me", auth, (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/workspaces", workspaceRoutes);
+app.use("/api/meetings", meetingRoutes);
 
 app.get("/", (req, res) => {
     res.json({
