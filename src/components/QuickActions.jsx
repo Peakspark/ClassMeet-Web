@@ -1,10 +1,4 @@
-import {
-  Video,
-  Plus,
-  CalendarDays,
-  ClipboardList,
-  BarChart3,
-} from "lucide-react";
+import {Video,Plus,CalendarDays,ClipboardList,BarChart3,} from "lucide-react";
 
 function QuickActions({
   onJoinMeeting,

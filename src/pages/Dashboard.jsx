@@ -1,4 +1,4 @@
-import { CalendarDays, Clock, Video, MoreHorizontal, Users, CheckCircle2, ClipboardList,} from "lucide-react";
+import { CalendarDays, Clock, Video, MoreHorizontal, Users, CheckCircle2, ClipboardList, BarChart3,} from "lucide-react";
 
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
@@ -9,6 +9,7 @@ import JoinMeetingModal from "../components/JoinMeetingModal";
 import CreateRoomModal from "../components/CreateRoomModal";
 import ScheduleMeetingModal from "../components/ScheduleMeetingModal";
 import NewTaskModal from "../components/NewTaskModal";
+import StartPollModal from "../components/StartPollModal";
 
 function Dashboard() {
 const [meetings, setMeetings] = useState( [
@@ -66,6 +67,29 @@ const [meetings, setMeetings] = useState( [
 
   const [tasks, setTasks] = useState([]);
 
+  const [showStartPoll, setShowStartPoll] = useState(false);
+
+  const [polls, setPolls] = useState([]);
+
+  const handleVote = (pollId, optionIndex) => {
+  setPolls((prevPolls) =>
+    prevPolls.map((poll) => {
+      if (poll.id !== pollId) {
+        return poll;
+      }
+
+      const updatedVotes = [...poll.votes];
+
+      updatedVotes[optionIndex] += 1;
+
+      return {
+        ...poll,
+        votes: updatedVotes,
+      };
+    })
+  );
+};
+
   return (
     <div className="min-h-screen bg-[#F0FDFA]">
 
@@ -85,8 +109,7 @@ const [meetings, setMeetings] = useState( [
          onCreateRoom={() => setShowCreateRoom(true)}
           onScheduleMeeting={() => setShowScheduleMeeting(true)}
            onNewTask={() => setShowNewTask(true)}
-            onStartPoll={() => console.log("Start Poll")}
-
+            onStartPoll={() => setShowStartPoll(true)}
           
           />
 
@@ -277,6 +300,102 @@ const [meetings, setMeetings] = useState( [
 
 </section>
 
+
+
+{/* Active Polls */}
+<section className="col-span-2 rounded-2xl bg-white p-6 shadow-sm">
+
+  <div className="mb-6 flex items-center justify-between">
+    <div>
+      <h2 className="text-lg font-bold text-[#172033]">
+        Active Polls
+      </h2>
+
+      <p className="mt-1 text-sm text-slate-500">
+        Ask and collect responses from your team
+      </p>
+    </div>
+
+    <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-[#0F766E]">
+      {polls.length} Polls
+    </span>
+  </div>
+
+  {polls.length === 0 ? (
+    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 py-8">
+      
+      <BarChart3
+        size={32}
+        className="text-slate-300"
+      />
+
+      <p className="mt-3 text-sm font-medium text-slate-500">
+        No active polls
+      </p>
+
+      <p className="mt-1 text-xs text-slate-400">
+        Click "Start Poll" to create one
+      </p>
+
+    </div>
+  ) : (
+    <div className="space-y-4">
+
+      {polls.map((poll) => (
+        <div
+          key={poll.id}
+          className="rounded-xl border border-slate-100 p-4 transition hover:border-teal-100 hover:bg-[#F0FDFA]"
+        >
+
+          {/* Question */}
+          <div className="flex items-start gap-3">
+
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50">
+              <BarChart3
+                size={19}
+                className="text-[#0F766E]"
+              />
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold text-[#172033]">
+                {poll.question}
+              </h3>
+
+              <p className="mt-1 text-xs text-slate-400">
+                Choose one option
+              </p>
+            </div>
+
+          </div>
+
+          {/* Options */}
+          <div className="mt-4 space-y-2">
+
+            {poll.options.map((option, index) => (
+              <button
+                key={option}
+                onClick={() => handleVote(poll.id, index)}
+                className="flex w-full items-center justify-between rounded-xl border border-slate-200 px-4 py-3 text-left text-sm text-slate-600 transition hover:border-[#0F766E] hover:bg-teal-50"
+              >
+                <span>{option}</span>
+
+                <span className="text-xs text-slate-400">
+                  {poll.votes[index]} votes
+                </span>
+              </button>
+            ))}
+
+          </div>
+
+        </div>
+      ))}
+
+    </div>
+  )}
+
+</section>
+
             {/* Today's Activity */}
             <section className="rounded-2xl bg-white p-6 shadow-sm">
 
@@ -371,6 +490,15 @@ const [meetings, setMeetings] = useState( [
   onCreateTask={(newTask) => {
     setTasks((prev) => [...prev, newTask]);
     setShowNewTask(false);
+  }}
+/>
+
+<StartPollModal
+  isOpen={showStartPoll}
+  onClose={() => setShowStartPoll(false)}
+  onCreatePoll={(newPoll) => {
+    setPolls((prev) => [...prev, newPoll]);
+    setShowStartPoll(false);
   }}
 />
 
