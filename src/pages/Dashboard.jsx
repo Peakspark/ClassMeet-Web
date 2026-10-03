@@ -1,4 +1,4 @@
-import { CalendarDays, Clock, Video, MoreHorizontal, Users, CheckCircle2,} from "lucide-react";
+import { CalendarDays, Clock, Video, MoreHorizontal, Users, CheckCircle2, ClipboardList,} from "lucide-react";
 
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
@@ -8,10 +8,10 @@ import Header from "../components/Header";
 import JoinMeetingModal from "../components/JoinMeetingModal";
 import CreateRoomModal from "../components/CreateRoomModal";
 import ScheduleMeetingModal from "../components/ScheduleMeetingModal";
-
+import NewTaskModal from "../components/NewTaskModal";
 
 function Dashboard() {
-  const meetings = [
+const [meetings, setMeetings] = useState( [
     {
       title: "Team Standup",
       type: "Daily Meeting",
@@ -33,7 +33,7 @@ function Dashboard() {
       duration: "45 min",
       members: 6,
     },
-  ];
+  ]);
 
   const activities = [
     {
@@ -62,6 +62,9 @@ function Dashboard() {
 
   const [showCreateRoom, setShowCreateRoom] = useState(false);
   const [showScheduleMeeting, setShowScheduleMeeting] = useState(false);
+  const [showNewTask, setShowNewTask] = useState(false);
+
+  const [tasks, setTasks] = useState([]);
 
   return (
     <div className="min-h-screen bg-[#F0FDFA]">
@@ -81,8 +84,9 @@ function Dashboard() {
             onJoinMeeting={() => setShowJoinModal(true)}
          onCreateRoom={() => setShowCreateRoom(true)}
           onScheduleMeeting={() => setShowScheduleMeeting(true)}
-           onNewTask={() => console.log("New Task")}
+           onNewTask={() => setShowNewTask(true)}
             onStartPoll={() => console.log("Start Poll")}
+
           
           />
 
@@ -179,6 +183,100 @@ function Dashboard() {
 
             </section>
 
+
+
+            {/* My Tasks */}
+<section className="col-span-2 rounded-2xl bg-white p-6 shadow-sm">
+
+  <div className="mb-6 flex items-center justify-between">
+    <div>
+      <h2 className="text-lg font-bold text-[#172033]">
+        My Tasks
+      </h2>
+
+      <p className="mt-1 text-sm text-slate-500">
+        Tasks created by you
+      </p>
+    </div>
+
+    <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-[#0F766E]">
+      {tasks.length} Tasks
+    </span>
+  </div>
+
+  {tasks.length === 0 ? (
+    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 py-8">
+      <ClipboardList
+        size={32}
+        className="text-slate-300"
+      />
+
+      <p className="mt-3 text-sm font-medium text-slate-500">
+        No tasks created yet
+      </p>
+
+      <p className="mt-1 text-xs text-slate-400">
+        Click "New Task" to create one
+      </p>
+    </div>
+  ) : (
+    <div className="space-y-3">
+
+      {tasks.map((task) => (
+        <div
+          key={task.id}
+          className="flex items-center justify-between rounded-xl border border-slate-100 p-4 transition hover:border-teal-100 hover:bg-[#F0FDFA]"
+        >
+
+          <div className="flex items-center gap-4">
+
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-50">
+              <ClipboardList
+                size={20}
+                className="text-[#0F766E]"
+              />
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold text-[#172033]">
+                {task.title}
+              </h3>
+
+              <p className="mt-1 text-xs text-slate-400">
+                Due: {task.dueDate}
+              </p>
+            </div>
+
+          </div>
+
+          <div className="flex items-center gap-3">
+
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                task.priority === "High"
+                  ? "bg-red-50 text-red-600"
+                  : task.priority === "Medium"
+                  ? "bg-orange-50 text-orange-600"
+                  : "bg-green-50 text-green-600"
+              }`}
+            >
+              {task.priority}
+            </span>
+
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+              {task.status}
+            </span>
+
+          </div>
+
+        </div>
+      ))}
+
+    </div>
+  )}
+
+</section>
+
             {/* Today's Activity */}
             <section className="rounded-2xl bg-white p-6 shadow-sm">
 
@@ -261,6 +359,19 @@ function Dashboard() {
 <ScheduleMeetingModal
   isOpen={showScheduleMeeting}
   onClose={() => setShowScheduleMeeting(false)}
+
+   onSchedule={(newMeeting) => {
+    setMeetings((prev) => [...prev, newMeeting]);
+    setShowScheduleMeeting(false);
+  }}
+/>
+<NewTaskModal
+  isOpen={showNewTask}
+  onClose={() => setShowNewTask(false)}
+  onCreateTask={(newTask) => {
+    setTasks((prev) => [...prev, newTask]);
+    setShowNewTask(false);
+  }}
 />
 
     </div>

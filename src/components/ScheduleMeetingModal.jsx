@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { X, CalendarDays } from "lucide-react";
 
-function ScheduleMeetingModal({ isOpen, onClose }) {
+function ScheduleMeetingModal({ isOpen, onClose ,onSchedule }) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -19,7 +19,16 @@ function ScheduleMeetingModal({ isOpen, onClose }) {
       return;
     }
 
-    console.log("Meeting Scheduled:", { title,date,time,meetingType, description,});
+    
+    const newMeeting = {
+  title: title,
+  type: meetingType,
+  time: time,
+  duration: "60 min",
+  members: 0,
+};
+
+onSchedule(newMeeting);
 
     setTitle("");
     setDate("");
