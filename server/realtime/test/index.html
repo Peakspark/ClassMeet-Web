@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head><title>Realtime test</title></head>
+<body>
+  <h3>Realtime test</h3>
+  <p id="status">Connection...</p>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get('name') || 'Guest';
+    const status = document.getElementById('status');
+    async function start() {
+      let token;
+      if (params.get('bad') === '1') {
+        token = 'this-is-a-fake-token';        
+      } else {
+        const res = await fetch('/dev-token?name=' + name);
+        token = (await res.json()).token;     
+        }
+      const socket = io({ auth: { token: token } });
+
+      socket.on('connect', () => {
+        status.textContent = 'Connected as ' + name + ': ' + socket.id;
+      });
+      socket.on('connect_error', (err) => {
+        status.textContent = 'Rejected: ' + err.message;
+      });
+    }
+    start();
+  </script>
+</body>
+</html>
