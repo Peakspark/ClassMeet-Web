@@ -7,6 +7,7 @@ import Header from "../components/Header";
  import { useState } from "react";
 import JoinMeetingModal from "../components/JoinMeetingModal";
 import CreateRoomModal from "../components/CreateRoomModal";
+import ScheduleMeetingModal from "../components/ScheduleMeetingModal";
 
 
 function Dashboard() {
@@ -60,6 +61,7 @@ function Dashboard() {
   const [showJoinModal, setShowJoinModal] = useState(false);
 
   const [showCreateRoom, setShowCreateRoom] = useState(false);
+  const [showScheduleMeeting, setShowScheduleMeeting] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#F0FDFA]">
@@ -78,7 +80,7 @@ function Dashboard() {
           
             onJoinMeeting={() => setShowJoinModal(true)}
          onCreateRoom={() => setShowCreateRoom(true)}
-          onScheduleMeeting={() => console.log("Schedule Meeting")}
+          onScheduleMeeting={() => setShowScheduleMeeting(true)}
            onNewTask={() => console.log("New Task")}
             onStartPoll={() => console.log("Start Poll")}
           
@@ -254,6 +256,11 @@ function Dashboard() {
     <CreateRoomModal
   isOpen={showCreateRoom}
   onClose={() => setShowCreateRoom(false)}
+/>
+
+<ScheduleMeetingModal
+  isOpen={showScheduleMeeting}
+  onClose={() => setShowScheduleMeeting(false)}
 />
 
     </div>

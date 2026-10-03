@@ -9,7 +9,7 @@ import {
 function QuickActions({
   onJoinMeeting,
   onCreateRoom,
-  OnScheduleMeeting,onNewTask,onStartPoll,
+  onScheduleMeeting,onNewTask,onStartPoll,
 
 }) {
   const actions = [
@@ -35,7 +35,7 @@ function QuickActions({
       icon: CalendarDays,
       iconBg: "bg-green-100",
       iconColor: "text-green-600",
-      onClick: OnScheduleMeeting,
+      onClick: onScheduleMeeting,
     },
     {
       title: "New Task",
