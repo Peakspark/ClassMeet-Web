@@ -1,3 +1,52 @@
+// backend structure
+1. User database model        ← NEXT
+2. Authentication
+   ├── Signup
+   ├── Login
+   ├── Logout
+   ├── JWT + HTTP-only cookie
+   └── Password reset
+
+3. Authorization
+   ├── Manager
+   ├── Supervisor
+   └── Team Member
+
+4. Workspace
+   ├── Create workspace
+   ├── Members
+   └── Roles
+
+5. Rooms
+   ├── Create/join rooms
+   └── Presence
+
+6. Messaging
+   ├── Individual chat
+   ├── Team/group chat
+   └── File sharing
+
+7. Socket.IO
+   └── Real-time communication
+
+8. WebRTC signaling
+   └── Video/audio
+
+9. Meetings
+   ├── Schedule
+   └── Join
+
+10. Project management
+    ├── To-do
+    ├── In progress
+    └── Completed
+
+11. Polls / feedback
+
+12. Analytics
+
+13. Security testing
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
