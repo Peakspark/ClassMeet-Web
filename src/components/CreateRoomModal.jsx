@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { X, Plus } from "lucide-react";
 
-function CreateRoomModal({ isOpen, onClose }) {
+function CreateRoomModal({ isOpen, onClose, onCreateRoom}) {
   const [roomName, setRoomName] = useState("");
   const [roomType, setRoomType] = useState("Team Meeting");
   const [description, setDescription] = useState("");
@@ -16,13 +16,16 @@ function CreateRoomModal({ isOpen, onClose }) {
     if (!roomName.trim()) {
       return;
     }
+  const newRoom = {
+    id: `classmeet-${Date.now()}`,
+    name: roomName,
+    type: roomType,
+    description: description,
+  };
 
-    console.log("Room Created:", {
-      roomName,
-      roomType,
-      description,
-    });
+  onCreateRoom(newRoom);
 
+  
     setRoomName("");
     setRoomType("Team Meeting");
     setDescription("");

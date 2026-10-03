@@ -10,8 +10,10 @@ import CreateRoomModal from "../components/CreateRoomModal";
 import ScheduleMeetingModal from "../components/ScheduleMeetingModal";
 import NewTaskModal from "../components/NewTaskModal";
 import StartPollModal from "../components/StartPollModal";
+import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
+  const navigate = useNavigate();
 const [meetings, setMeetings] = useState( [
     {
       title: "Team Standup",
@@ -473,6 +475,11 @@ const [meetings, setMeetings] = useState( [
     <CreateRoomModal
   isOpen={showCreateRoom}
   onClose={() => setShowCreateRoom(false)}
+
+  onCreateRoom={(newRoom) => {
+    setShowCreateRoom(false);
+    navigate(`/meeting/${newRoom.id}`);
+  }}
 />
 
 <ScheduleMeetingModal

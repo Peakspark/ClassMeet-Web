@@ -1,11 +1,8 @@
-import {
-  Search,
-  Bell,
-  Video,
-  ChevronDown,
-} from "lucide-react";
+import { Search, Bell, Video, ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 function Header() {
+   const navigate = useNavigate();
   return (
     <header className="flex items-center justify-between px-8 py-6">
 
@@ -53,13 +50,16 @@ function Header() {
         </button>
 
         {/* Join Meeting */}
-        <button className="flex items-center gap-2 rounded-xl bg-[#0F766E] px-5 py-3 text-sm font-semibold text-white shadow-md shadow-teal-700/20 transition hover:bg-[#134E4A]">
-
-          <Video size={18} />
-
-          Join Meeting
-
-        </button>
+        <button
+  onClick={() => {
+    const roomId = `classmeet-${Date.now()}`;
+    navigate(`/meeting/${roomId}`);
+  }}
+  className="flex items-center gap-2 rounded-xl bg-[#0F766E] px-5 py-3 text-sm font-semibold text-white shadow-md shadow-teal-700/20 transition hover:bg-[#134E4A]"
+>
+  <Video size={18} />
+  Join Meeting
+</button>
 
         {/* Profile */}
         <button className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 shadow-sm transition hover:bg-slate-50">
