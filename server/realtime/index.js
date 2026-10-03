@@ -1,20 +1,19 @@
 const { Server } = require('socket.io');
 const socketAuth = require('./socketAuth');
 const registerPresenceHandlers = require('./presenceHandlers');
+const registerRoomHandlers = require('./roomHandlers');
 function initRealtime(httpServer) {
   const io = new Server(httpServer, {
     cors: { origin: '*' } 
-  });
+});
   io.use(socketAuth);
   io.on('connection', (socket) => {
     console.log('User connected:', socket.user.name, '(' + socket.user.role + ')', socket.id);
-    registerPresenceHandlers(io, socket);
-
+    registerPresenceHandlers(io, socket); // presence
+    registerRoomHandlers(io, socket);     // rooms
     socket.on('disconnect', () => {
       console.log('User disconnected:', socket.user.name, socket.id);
     });
   });
-
-  return io;
-}
+  return io;}
 module.exports = initRealtime;

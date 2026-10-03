@@ -1,25 +1,36 @@
 <!DOCTYPE html>
 <html>
-<head><title>Realtime test</title></head>
+<head>
+  <title>Realtime test</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: 20px auto; }
+    .row { display: flex; gap: 40px; }
+  </style>
+</head>
 <body>
   <h3>Realtime test</h3>
   <p id="status">Connecting...</p>
-  <label>My status:
+<label>My status:
     <select id="statusSelect">
       <option value="online">online</option>
       <option value="available">available</option>
       <option value="in-meeting">in-meeting</option>
     </select>
-  </label>
-  <h4>Who is online</h4>
-  <ul id="users"></ul>
+  </label><p>
+    Room: <input id="roomInput" value="general">
+    <button id="joinBtn">Join</button>
+    <button id="leaveBtn">Leave</button>
+    <span id="roomMsg"></span>
+  </p>
+  <div class="row">
+    <div><h4>Who is online</h4><ul id="users"></ul></div>
+      <div><h4 id="roomTitle">Not in a room</h4><ul id="roomUsers"></ul></div></div>
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     const name = params.get('name') || 'Guest';
     const status = document.getElementById('status');
     const users = new Map();
-
     function render() {
       const ul = document.getElementById('users');
       ul.innerHTML = '';
@@ -27,8 +38,7 @@
         const li = document.createElement('li');
         li.textContent = u.name + ' (' + u.role + ') - ' + u.status;
         ul.appendChild(li);
-      });
-    }
+      });}
     async function start() {
       let token;
       if (params.get('bad') === '1') {
@@ -44,24 +54,43 @@
       socket.on('connect_error', (err) => {
         status.textContent = 'Rejected: ' + err.message;
       });
+
+      //presence
       socket.on('presence:list', (list) => {
         users.clear();
         list.forEach((u) => users.set(u.id, u));
         render();
       });
-      socket.on('presence:update', (u) => {
-        users.set(u.id, u);
-        render();
-      });
-      socket.on('presence:offline', (data) => {
-        users.delete(data.id);
-        render();
-      });
+      socket.on('presence:update', (u) => { users.set(u.id, u); render(); });
+      socket.on('presence:offline', (data) => { users.delete(data.id); render(); });
       document.getElementById('statusSelect').addEventListener('change', (e) => {
         socket.emit('presence:set', e.target.value);
       });
-    }
 
+      //rooms 
+      document.getElementById('joinBtn').addEventListener('click', () => {
+        document.getElementById('roomMsg').textContent = '';
+        socket.emit('room:join', document.getElementById('roomInput').value);
+      });
+      document.getElementById('leaveBtn').addEventListener('click', () => {
+        socket.emit('room:leave');
+        document.getElementById('roomTitle').textContent = 'Not in a room';
+        document.getElementById('roomUsers').innerHTML = '';
+      });
+      socket.on('room:users', (data) => {
+        document.getElementById('roomTitle').textContent = 'In room: ' + data.roomId;
+        const ul = document.getElementById('roomUsers');
+        ul.innerHTML = '';
+        data.users.forEach((u) => {
+          const li = document.createElement('li');
+          li.textContent = u.name + ' (' + u.role + ')';
+          ul.appendChild(li);
+        });
+      });
+      socket.on('room:error', (msg) => {
+        document.getElementById('roomMsg').textContent = msg;
+      });
+    }
     start();
   </script>
 </body>
