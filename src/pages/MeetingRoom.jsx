@@ -7,6 +7,9 @@ import VideoTile from "../components/VideoTile";
 import MeetingControls from "../components/MeetingControls";
 import MeetingChat from "../components/MeetingChat";
 
+import ParticipantsPanel from "../components/ParticipantsPanel";
+
+
 
 function MeetingRoom() {
   const navigate = useNavigate();
@@ -23,6 +26,48 @@ function MeetingRoom() {
 
   const [showParticipants, setShowParticipants] = useState(false);
   const [showChat, setShowChat] = useState(false);
+
+
+
+  const [participants] = useState([
+  {
+    id: 1,
+    name: "Demo User",
+    online: true,
+    micOn: micOn,
+    cameraOn: cameraOn,
+    isLocal: true,
+    avatarColor: "bg-[#14B8A6]",
+  },
+  {
+    id: 2,
+    name: "Alex",
+    online: true,
+    micOn: true,
+    cameraOn: true,
+    isLocal: false,
+    avatarColor: "bg-blue-500",
+  },
+  {
+    id: 3,
+    name: "Taylor",
+    online: true,
+    micOn: false,
+    cameraOn: true,
+    isLocal: false,
+    avatarColor: "bg-purple-500",
+  },
+  {
+    id: 4,
+    name: "Jordan",
+    online: true,
+    micOn: true,
+    cameraOn: false,
+    isLocal: false,
+    avatarColor: "bg-orange-500",
+  },
+]);
+
 
   // Start camera and microphone
   useEffect(() => {
@@ -257,99 +302,12 @@ function MeetingRoom() {
         </div>
 
         {/* ================= PARTICIPANTS PANEL ================= */}
-        {showParticipants && (
-          <aside className="w-72 shrink-0 border-l border-white/10 bg-[#172033] p-5">
-
-            <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">
-                Participants
-              </h2>
-
-              <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs text-slate-300">
-                4
-              </span>
-            </div>
-
-            <div className="space-y-3">
-
-              {/* You */}
-              <div className="flex items-center gap-3 rounded-xl bg-white/5 p-3">
-
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#14B8A6] font-semibold">
-                  D
-                </div>
-
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">
-                    Demo User
-                  </p>
-
-                  <p className="text-xs text-green-400">
-                    You
-                  </p>
-                </div>
-
-              </div>
-
-              {/* Alex */}
-              <div className="flex items-center gap-3 rounded-xl bg-white/5 p-3">
-
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-500 font-semibold">
-                  A
-                </div>
-
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">
-                    Alex
-                  </p>
-
-                  <p className="text-xs text-slate-400">
-                    Connected
-                  </p>
-                </div>
-
-              </div>
-
-              {/* Taylor */}
-              <div className="flex items-center gap-3 rounded-xl bg-white/5 p-3">
-
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-purple-500 font-semibold">
-                  T
-                </div>
-
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">
-                    Taylor
-                  </p>
-
-                  <p className="text-xs text-slate-400">
-                    Connected
-                  </p>
-                </div>
-
-              </div>
-
-              {/* Jordan */}
-              <div className="flex items-center gap-3 rounded-xl bg-white/5 p-3">
-
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange-500 font-semibold">
-                  J
-                </div>
-
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">
-                    Jordan
-                  </p>
-
-                  <p className="text-xs text-slate-400">
-                    Connected
-                  </p>
-                </div>
-
-              </div>
-
-            </div>
-          </aside>
+       
+          {showParticipants && (
+  <ParticipantsPanel
+    participants={participants}
+    onClose={() => setShowParticipants(false)}
+  />
         )}
 
         {/* ================= CHAT PANEL ================= */}
