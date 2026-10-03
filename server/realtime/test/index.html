@@ -3,29 +3,65 @@
 <head><title>Realtime test</title></head>
 <body>
   <h3>Realtime test</h3>
-  <p id="status">Connection...</p>
+  <p id="status">Connecting...</p>
+  <label>My status:
+    <select id="statusSelect">
+      <option value="online">online</option>
+      <option value="available">available</option>
+      <option value="in-meeting">in-meeting</option>
+    </select>
+  </label>
+  <h4>Who is online</h4>
+  <ul id="users"></ul>
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     const name = params.get('name') || 'Guest';
     const status = document.getElementById('status');
+    const users = new Map();
+
+    function render() {
+      const ul = document.getElementById('users');
+      ul.innerHTML = '';
+      users.forEach((u) => {
+        const li = document.createElement('li');
+        li.textContent = u.name + ' (' + u.role + ') - ' + u.status;
+        ul.appendChild(li);
+      });
+    }
     async function start() {
       let token;
       if (params.get('bad') === '1') {
-        token = 'this-is-a-fake-token';        
+        token = 'this-is-a-fake-token';
       } else {
         const res = await fetch('/dev-token?name=' + name);
-        token = (await res.json()).token;     
-        }
+        token = (await res.json()).token;
+      }
       const socket = io({ auth: { token: token } });
-
       socket.on('connect', () => {
         status.textContent = 'Connected as ' + name + ': ' + socket.id;
       });
       socket.on('connect_error', (err) => {
         status.textContent = 'Rejected: ' + err.message;
       });
+      socket.on('presence:list', (list) => {
+        users.clear();
+        list.forEach((u) => users.set(u.id, u));
+        render();
+      });
+      socket.on('presence:update', (u) => {
+        users.set(u.id, u);
+        render();
+      });
+      socket.on('presence:offline', (data) => {
+        users.delete(data.id);
+        render();
+      });
+      document.getElementById('statusSelect').addEventListener('change', (e) => {
+        socket.emit('presence:set', e.target.value);
+      });
     }
+
     start();
   </script>
 </body>
