@@ -14,10 +14,10 @@ app.get('/dev-token', (req, res) => {
   const token = jwt.sign(
     { id: name.toLowerCase(), name: name, role: role },
     process.env.JWT_SECRET,
-    { expiresIn: '1h' }
-  );
+    { expiresIn: '1h' });
   res.json({ token });
 });
+
 initRealtime(server);
 connectDB().catch((err) => console.error('MongoDB error:', err.message));
 server.listen(5000, () => {
