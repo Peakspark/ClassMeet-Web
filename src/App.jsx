@@ -7,6 +7,7 @@ import VirtualOffice from "./components/VirtualOffice";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Meetings from "./pages/Meetings";
 
 // function Dashboard() {
 //   return (
@@ -28,7 +29,7 @@ function App() {
   <Routes>
 
       <Route path="/" element={<Dashboard />} />
-
+<Route path="/meetings" element={<Meetings />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
 

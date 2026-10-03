@@ -1,15 +1,5 @@
-import {
-  House,
-  Video,
-  MessageSquare,
-  FolderKanban,
-  BarChart3,
-  Users,
-  Settings,
-  LogOut,
-  GraduationCap,
-} from "lucide-react";
-
+import { House,Video, MessageSquare, FolderKanban, BarChart3, Users, Settings, LogOut, GraduationCap,} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 function Sidebar() {
   const menuItems = [
     {
@@ -38,7 +28,7 @@ function Sidebar() {
       icon: Users,
     },
   ];
-
+const navigate = useNavigate();
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col bg-[#134E4A] text-white">
 
@@ -64,6 +54,15 @@ function Sidebar() {
           return (
             <button
               key={item.name}
+               onClick={() => {
+    if (item.name === "Dashboard") {
+      navigate("/");
+    }
+
+    if (item.name === "Meetings") {
+      navigate("/meetings");
+    }
+  }}
               className={`group flex items-center gap-4 rounded-xl px-4 py-3.5 text-left transition-all duration-200 ${
                 item.active
                   ? "bg-[#0F766E] text-white shadow-lg shadow-black/10"
