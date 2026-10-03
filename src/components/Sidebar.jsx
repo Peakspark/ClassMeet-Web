@@ -20,6 +20,7 @@ function Sidebar() {
     {
       name: "Projects",
       icon: FolderKanban,
+       path: "/projects",
     },
     {
       name: "Analytics",

@@ -9,7 +9,8 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Meetings from "./pages/Meetings";
 import Messages from "./pages/Messages";
-
+import Projects from "./pages/Projects";
+import MeetingRoom from "./pages/MeetingRoom";
 // function Dashboard() {
 //   return (
 //     <div className="min-h-screen bg-[#EAF4FF]">
@@ -65,6 +66,20 @@ function App() {
       <Messages />
     </Layout>
   }
+/>
+
+<Route
+  path="/projects"
+  element={
+    <Layout>
+      <Projects />
+    </Layout>
+  }
+/>
+
+<Route
+  path="/meeting/:roomId"
+  element={<MeetingRoom />}
 />
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
