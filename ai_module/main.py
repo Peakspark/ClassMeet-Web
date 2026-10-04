@@ -1,23 +1,19 @@
 from openai import OpenAI
 from dotenv import load_dotenv
 from pathlib import Path
+from transcribe import get_transcript
 import os
 
-
+# Load .env file
 env_path = Path(__file__).resolve().parent / ".env"
-
-
 load_dotenv(dotenv_path=env_path)
 
-
+# Get OpenRouter API key
 api_key = os.getenv("OPENROUTER_API_KEY")
-
 
 if not api_key:
     print("Error: OPENROUTER_API_KEY not found in .env file")
     exit()
-
-print("API key loaded successfully!")
 
 # OpenRouter client
 client = OpenAI(
@@ -25,24 +21,24 @@ client = OpenAI(
     api_key=api_key
 )
 
+# Convert meeting audio into transcript
+print("Generating transcript from meeting audio...\n")
 
-transcript = """
-Riya will complete the AI chatbot by Monday.
-Rehan will integrate the backend by Tuesday.
-Arpit will test the meeting application on Wednesday.
-The team will meet again on Thursday to review the project.
-"""
+transcript = get_transcript()
 
-print("\nAI Meeting Assistant")
+print("Meeting Transcript:")
+print(transcript)
+print()
+
+# Start chatbot
+print("AI Meeting Assistant")
 print("Ask anything about the meeting.")
 print("Type 'exit' to close the chatbot.\n")
-
 
 while True:
 
     user_message = input("You: ")
 
-    
     if user_message.lower() == "exit":
         print("Bot: Goodbye!")
         break
