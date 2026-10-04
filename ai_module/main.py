@@ -4,49 +4,67 @@ from pathlib import Path
 from transcribe import get_transcript
 import os
 
-# Load .env file
+
+
 env_path = Path(__file__).resolve().parent / ".env"
+
 load_dotenv(dotenv_path=env_path)
 
-# Get OpenRouter API key
 api_key = os.getenv("OPENROUTER_API_KEY")
 
 if not api_key:
     print("Error: OPENROUTER_API_KEY not found in .env file")
     exit()
 
-# OpenRouter client
+
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=api_key
 )
 
-# Convert meeting audio into transcript
-print("Generating transcript from meeting audio...\n")
+audio_path = Path(__file__).resolve().parent / "audio3.mp3"
 
-transcript = get_transcript()
+
+print("\nGenerating meeting transcript...\n")
+
+try:
+    transcript = get_transcript(str(audio_path))
+
+except Exception as e:
+    print("Error while generating transcript:", e)
+    exit()
+
+
+if not transcript:
+    print("Error: No transcript was generated.")
+    exit()
+
 
 print("Meeting Transcript:")
 print(transcript)
 print()
 
-# Start chatbot
 print("AI Meeting Assistant")
 print("Ask anything about the meeting.")
 print("Type 'exit' to close the chatbot.\n")
 
+
 while True:
 
-    user_message = input("You: ")
+    user_message = input("You: ").strip()
 
     if user_message.lower() == "exit":
         print("Bot: Goodbye!")
         break
 
+    if not user_message:
+        continue
+
+
     prompt = f"""
 You are an AI Meeting Assistant.
 
-Use the following meeting transcript to answer the user's question.
+Use only the following meeting transcript to answer the user's question.
 
 Meeting Transcript:
 {transcript}
@@ -54,19 +72,23 @@ Meeting Transcript:
 User Question:
 {user_message}
 
-You can:
+Your tasks are:
 - Answer questions about the meeting
 - Summarize the meeting
 - Identify assigned tasks
 - Identify responsible persons
 - Identify deadlines
-- Generate follow-up messages
+- Identify future meetings
+- Generate short follow-up messages
 
-If the requested information is not present in the transcript,
+If the requested information is not present in the meeting transcript,
 say that it was not mentioned in the meeting.
+
+Do not make up information.
 
 Give a short and clear answer.
 """
+
 
     try:
 
@@ -84,6 +106,7 @@ Give a short and clear answer.
 
         print("Bot:", bot_reply)
         print()
+
 
     except Exception as e:
 
