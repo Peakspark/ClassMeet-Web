@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { useState } from 'react'
+import ProtectedRoute from "./components/ProtectedRoute";
 import Sidebar from "./components/Sidebar";
 // import QuickActions from './components/QuickActions';
 import Header from "./components/Header";
@@ -24,19 +25,18 @@ import Profile from "./pages/Profile";
 //     </div>
 //   );
 // }
-function Layout({children}){
-  return(
-    <div className ="min-h-screen bg-[#F0FDFA]">
-<Sidebar/>
+function Layout({ children }) {
+  return (
+    <ProtectedRoute>
+      <div className="min-h-screen bg-[#F0FDFA]">
+        <Sidebar />
 
-<main className="ml-64">
-
-  <Header />
-  {children}
-</main>
-
-
-    </div>
+        <main className="ml-64">
+          <Header />
+          {children}
+        </main>
+      </div>
+    </ProtectedRoute>
   );
 }
 
@@ -89,7 +89,11 @@ element={
 
 <Route
   path="/meeting/:roomId"
-  element={<MeetingRoom />}
+  element={
+    <ProtectedRoute>
+      <MeetingRoom />
+    </ProtectedRoute>
+  }
 />
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
