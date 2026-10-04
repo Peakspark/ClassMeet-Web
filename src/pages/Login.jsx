@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {GraduationCap,Mail,Lock,Eye,EyeOff,ArrowRight,} from "lucide-react";
+import api from "../api";
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -21,18 +22,18 @@ function Login() {
     });
   };
 
-  const handleSubmit = (e) => {
+   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!formData.email || !formData.password) {
       alert("Please enter email and password");
       return;
     }
-
-    console.log("Login Data:", formData);
-
-    // Temporary frontend login
-    navigate("/");
+    try {
+      await api.post("/auth/login", formData);
+      navigate("/");
+    } catch (err) {
+      alert(err.response?.data?.message || "Could not reach the server");
+    }
   };
 
   return (

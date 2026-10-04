@@ -1,4 +1,5 @@
 import { useState } from "react";
+import api from "../api";
 import { Link, useNavigate } from "react-router-dom";
 import {
   GraduationCap,
@@ -30,19 +31,21 @@ function Signup() {
     });
   };
 
-  const handleSubmit = (e) => {
+      const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!formData.name || !formData.email || !formData.password) {
       alert("Please fill all fields");
       return;
     }
-
-    console.log("Signup Data:", formData);
-
-    navigate("/");
+    try {
+      await api.post("/auth/signup", formData);
+      alert("Account created. Please log in.");
+      navigate("/login");
+    } catch (err) {
+      alert(err.response?.data?.message || "Could not reach the server");
+    }
   };
-
+  
   return (
     <div className="min-h-screen bg-[#F0FDFA] p-5">
 
