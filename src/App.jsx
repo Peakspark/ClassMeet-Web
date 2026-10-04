@@ -11,6 +11,7 @@ import Meetings from "./pages/Meetings";
 import Messages from "./pages/Messages";
 import Projects from "./pages/Projects";
 import MeetingRoom from "./pages/MeetingRoom";
+import Profile from "./pages/Profile";
 // function Dashboard() {
 //   return (
 //     <div className="min-h-screen bg-[#EAF4FF]">
@@ -76,6 +77,15 @@ function App() {
     </Layout>
   }
 />
+<Route 
+path="/profile"
+element={
+  <Layout>
+    <Profile/>
+  </Layout>
+}
+/>
+
 
 <Route
   path="/meeting/:roomId"
