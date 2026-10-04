@@ -13,11 +13,8 @@ import Messages from "./pages/Messages";
 import Projects from "./pages/Projects";
 import MeetingRoom from "./pages/MeetingRoom";
 import Profile from "./pages/Profile";
-// function Dashboard() {
-//   return (
-//     <div className="min-h-screen bg-[#EAF4FF]">
-//       <Sidebar />
 
+<<<<<<< HEAD
 //       <main className="ml-64">
 //         <Header />
 //         <QuickActions />
@@ -37,6 +34,21 @@ function Layout({ children }) {
         </main>
       </div>
     </ProtectedRoute>
+=======
+function Layout({children}){
+  return(
+    <div className ="min-h-Screen bg-[#F0FDFA]">
+<Sidebar/>
+
+<main className="ml-0 md:ml-64">
+
+  <Header />
+  {children}
+</main>
+
+
+    </div>
+>>>>>>> cd802fc ( makeing a responsive  sidebar and header for your mobail)
   );
 }
 
