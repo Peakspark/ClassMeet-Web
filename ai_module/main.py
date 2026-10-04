@@ -1,5 +1,7 @@
 from google import genai
+from google.genai import errors
 from dotenv import load_dotenv
+import time
 
 load_dotenv()
 
@@ -12,9 +14,33 @@ Arpit will test the meeting application on Wednesday.
 The team will meet again on Thursday to review the project.
 """
 
+
+def generate_with_retry(client, prompt, retries=5):
+
+    for i in range(retries):
+
+        try:
+            return client.models.generate_content(
+                model="gemini-3.8-flash",
+                contents=prompt
+            )
+
+        except errors.ServerError as e:
+
+            if i == retries - 1:
+                raise
+
+            wait = 2 ** i
+
+            print(f"Server busy, retrying in {wait}s...")
+
+            time.sleep(wait)
+
+
 print("AI Meeting Assistant")
 print("Ask anything about the meeting.")
 print("Type 'exit' to close the chatbot.\n")
+
 
 while True:
 
@@ -49,10 +75,19 @@ say that it was not mentioned in the meeting.
 Give a short and clear answer.
 """
 
-    response = client.models.generate_content(
-        model="gemini-3.8-flash",
-        contents=prompt
-    )
+    try:
 
-    print("Bot:", response.text)
-    print()
+        response = generate_with_retry(client, prompt)
+
+        print("Bot:", response.text)
+        print()
+
+    except errors.ServerError:
+
+        print("Bot: Gemini server is currently busy. Please try again later.")
+        print()
+
+    except errors.ClientError as e:
+
+        print("Bot: API request error:", e)
+        print()
