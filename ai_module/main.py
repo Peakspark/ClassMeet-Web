@@ -1,11 +1,30 @@
-from google import genai
-from google.genai import errors
+from openai import OpenAI
 from dotenv import load_dotenv
-import time
+from pathlib import Path
+import os
 
-load_dotenv()
 
-client = genai.Client()
+env_path = Path(__file__).resolve().parent / ".env"
+
+
+load_dotenv(dotenv_path=env_path)
+
+
+api_key = os.getenv("OPENROUTER_API_KEY")
+
+
+if not api_key:
+    print("Error: OPENROUTER_API_KEY not found in .env file")
+    exit()
+
+print("API key loaded successfully!")
+
+# OpenRouter client
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=api_key
+)
+
 
 transcript = """
 Riya will complete the AI chatbot by Monday.
@@ -14,30 +33,7 @@ Arpit will test the meeting application on Wednesday.
 The team will meet again on Thursday to review the project.
 """
 
-
-def generate_with_retry(client, prompt, retries=5):
-
-    for i in range(retries):
-
-        try:
-            return client.models.generate_content(
-                model="gemini-3.8-flash",
-                contents=prompt
-            )
-
-        except errors.ServerError as e:
-
-            if i == retries - 1:
-                raise
-
-            wait = 2 ** i
-
-            print(f"Server busy, retrying in {wait}s...")
-
-            time.sleep(wait)
-
-
-print("AI Meeting Assistant")
+print("\nAI Meeting Assistant")
 print("Ask anything about the meeting.")
 print("Type 'exit' to close the chatbot.\n")
 
@@ -46,6 +42,7 @@ while True:
 
     user_message = input("You: ")
 
+    
     if user_message.lower() == "exit":
         print("Bot: Goodbye!")
         break
@@ -77,17 +74,22 @@ Give a short and clear answer.
 
     try:
 
-        response = generate_with_retry(client, prompt)
+        response = client.chat.completions.create(
+            model="nvidia/nemotron-3-ultra-550b-a55b:free",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        )
 
-        print("Bot:", response.text)
+        bot_reply = response.choices[0].message.content
+
+        print("Bot:", bot_reply)
         print()
 
-    except errors.ServerError:
+    except Exception as e:
 
-        print("Bot: Gemini server is currently busy. Please try again later.")
-        print()
-
-    except errors.ClientError as e:
-
-        print("Bot: API request error:", e)
+        print("Bot: API error:", e)
         print()
