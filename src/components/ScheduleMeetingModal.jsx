@@ -21,6 +21,9 @@ function ScheduleMeetingModal({ isOpen, onClose ,onSchedule }) {
 
     
     const newMeeting = {
+
+   id: Date.now(),
+  roomId: `classmeet-${Date.now()}`,
   title: title,
   type: meetingType,
   time: time,

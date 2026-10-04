@@ -16,6 +16,8 @@ function Dashboard() {
   const navigate = useNavigate();
 const [meetings, setMeetings] = useState( [
     {
+      id: 1,
+    roomId: "classmeet-team-standup",
       title: "Team Standup",
       type: "Daily Meeting",
       time: "10:00 AM",
@@ -23,6 +25,8 @@ const [meetings, setMeetings] = useState( [
       members: 8,
     },
     {
+       id: 2,
+    roomId: "classmeet-frontend",
       title: "Frontend Development",
       type: "Project Meeting",
       time: "12:00 PM",
@@ -30,6 +34,8 @@ const [meetings, setMeetings] = useState( [
       members: 5,
     },
     {
+      id: 3,
+    roomId: "classmeet-design",
       title: "Design Discussion",
       type: "Team Meeting",
       time: "03:00 PM",
@@ -192,10 +198,13 @@ const [meetings, setMeetings] = useState( [
                       {/* Join */}
                       {/* Join Button */}
 <button
-  onClick={() => setShowJoinModal(true)}
-  className="flex items-center gap-2 rounded-lg bg-[#0F766E] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#134E4A]"
+  onClick={() => {
+    if (meeting.roomId) {
+      navigate(`/meeting/${meeting.roomId}`);
+    }
+  }}
+  className="rounded-lg bg-[#0F766E] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#134E4A]"
 >
-  <Video size={15} />
   Join
 </button>
 
