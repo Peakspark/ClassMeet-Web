@@ -8,6 +8,8 @@ import authRoutes from "./routes/authRoutes.js";
 import auth from "./middleware/auth.js";
 import workspaceRoutes from "./routes/workspaceRoutes.js";
 import meetingRoutes from "./routes/meetingRoutes.js";
+import taskRoutes from "./routes/taskRoutes.js";
+import pollRoutes from "./routes/pollRoutes.js";
 
 dotenv.config();
 
@@ -41,6 +43,8 @@ app.get("/api/auth/me", auth, (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/workspaces", workspaceRoutes);
 app.use("/api/meetings", meetingRoutes);
+app.use("/api/tasks", taskRoutes);
+app.use("/api/polls", pollRoutes);
 
 app.get("/", (req, res) => {
     res.json({
