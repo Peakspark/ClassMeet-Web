@@ -1,7 +1,22 @@
 import { X, Video, Copy } from "lucide-react";
 
-function JoinMeetingModal({ isOpen, onClose }) {
-  if (!isOpen) return null;
+function JoinMeetingModal({ isOpen, onClose , onJoinMeeting }) {
+ 
+  if (!isOpen){
+     return null;
+    }
+
+  const handleJoin = (e) => {
+    e.preventDefault();
+
+    if (!meetingId.trim()) {
+      return;
+    }
+
+    onJoinMeeting(meetingId.trim());
+
+    setMeetingId("");
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">

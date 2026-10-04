@@ -471,6 +471,10 @@ const [meetings, setMeetings] = useState( [
           <JoinMeetingModal
       isOpen={showJoinModal}
       onClose={() => setShowJoinModal(false)}
+        onJoinMeeting={(roomId) => {
+    setShowJoinMeeting(false);
+    navigate(`/meeting/${roomId}`);
+  }}
     />
     <CreateRoomModal
   isOpen={showCreateRoom}
