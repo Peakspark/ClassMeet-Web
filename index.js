@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-import helmet from "helmet";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import auth from "./middleware/auth.js";
@@ -10,10 +9,38 @@ import workspaceRoutes from "./routes/workspaceRoutes.js";
 import meetingRoutes from "./routes/meetingRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
 import pollRoutes from "./routes/pollRoutes.js";
+import http from "http";
+import { Server } from "socket.io";
+import { initializeSocket } from "./sockets/socket.js";
+import analyticsRoutes from "./routes/analyticsRoutes.js";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 
 dotenv.config();
 
 const app = express();
+
+app.use(helmet());
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: "Too many requests, please try again later.",
+});
+
+app.use("/api", limiter);
+
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+  },
+});
+
+initializeSocket(io);
+
 connectDB();
 
 app.use(helmet());
@@ -45,6 +72,7 @@ app.use("/api/workspaces", workspaceRoutes);
 app.use("/api/meetings", meetingRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/polls", pollRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 app.get("/", (req, res) => {
     res.json({
@@ -54,6 +82,15 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Internal server error",
+  });
+});
+
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
