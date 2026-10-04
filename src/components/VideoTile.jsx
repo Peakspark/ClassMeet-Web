@@ -3,9 +3,11 @@ import { Mic, MicOff,VideoOff } from "lucide-react";
 
 function VideoTile({
   stream,
+  screenStream = null,
   name = "Participant",
   muted = false,
   micOn = true,
+  cameraOn = true,
   isLocal = false,
 }) {
   const videoRef = useRef(null);

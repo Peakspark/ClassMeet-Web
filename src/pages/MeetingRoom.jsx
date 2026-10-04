@@ -258,11 +258,37 @@ function MeetingRoom() {
           <div className="w-full max-w-5xl">
 
             {/* Screen Sharing Indicator */}
-            {isSharing && (
+            {/* {isSharing && (
               <div className="mb-4 inline-flex rounded-lg bg-[#14B8A6] px-4 py-2 text-sm font-semibold">
                 You are sharing your screen
               </div>
-            )}
+            )} */}
+
+            {screenStream && (
+  <div className="mb-4 overflow-hidden rounded-2xl border border-white/10 bg-black">
+    <video
+      autoPlay
+      playsInline
+      muted
+      ref={(video) => {
+        if (video) {
+          video.srcObject = screenStream;
+        }
+      }}
+      className="max-h-[500px] w-full object-contain"
+    />
+
+    <div className="border-t border-white/10 bg-[#172033] px-4 py-3">
+      <p className="text-sm font-semibold text-white">
+        Your Screen
+      </p>
+
+      <p className="text-xs text-slate-400">
+        You are currently sharing your screen
+      </p>
+    </div>
+  </div>
+)}
 
             {/* Video Grid */}
             <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
@@ -273,6 +299,7 @@ function MeetingRoom() {
                 name="Demo User"
                 muted={true}
                 micOn={micOn}
+                  cameraOn={cameraOn}
                 isLocal={true}
               />
 
