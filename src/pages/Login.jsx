@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {GraduationCap,Mail,Lock,Eye,EyeOff,ArrowRight,} from "lucide-react";
 import api from "../api";
+import { useAuth } from "../context/AuthContext";
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -12,6 +13,7 @@ function Login() {
   });
 
   const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,12 +30,11 @@ function Login() {
       alert("Please enter email and password");
       return;
     }
-    try {
-      await api.post("/auth/login", formData);
-      navigate("/");
-    } catch (err) {
-      alert(err.response?.data?.message || "Could not reach the server");
-    }
+    try {const res = await api.post("/auth/login", formData);
+      setUser(res.data.user);
+      navigate("/");} 
+      catch (err) {
+      alert(err.response?.data?.message || "Could not reach the server");}
   };
 
   return (

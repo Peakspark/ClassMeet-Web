@@ -1,6 +1,9 @@
+import { useAuth } from "../context/AuthContext";
+
 import { House,Video, MessageSquare, FolderKanban, BarChart3, Users, Settings, LogOut, GraduationCap,} from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 function Sidebar() {
+  const { user } = useAuth();
   const menuItems = [
     {
       name: "Dashboard",
@@ -94,17 +97,17 @@ const location = useLocation();
 
           {/* Avatar */}
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#14B8A6] font-semibold text-white">
-            A
+            {user?.name?.charAt(0).toUpperCase()}
           </div>
 
           {/* User Info */}
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">
-              Amit Kumar
+              {user?.name}
             </p>
 
-            <p className="text-xs text-teal-200">
-              Team Member
+            <p className="text-xs text-teal-200 capitalize">
+              {user?.role}
             </p>
           </div>
 

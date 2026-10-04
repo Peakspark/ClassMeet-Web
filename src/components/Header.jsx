@@ -1,19 +1,28 @@
+import { useAuth } from "../context/AuthContext";
 import { Search, Bell, Video, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 function Header() {
    const navigate = useNavigate();
+     const { user } = useAuth();
+  const today = new Date().toLocaleDateString("en-IN", {
+    weekday: "long", year: "numeric", month: "long", day: "numeric",
+  });
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const firstName = user?.name?.split(" ")[0] || "";
+
   return (
     <header className="flex items-center justify-between px-8 py-6">
 
       {/* Left - Greeting */}
       <div>
         <p className="text-sm text-slate-500">
-          Friday, October 3, 2026
+          {today}
         </p>
 
         <h1 className="mt-1 text-2xl font-bold text-[#172033]">
-          Good morning, Amit 👋
+          {greeting}, {firstName} 
         </h1>
       </div>
 
