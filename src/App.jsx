@@ -25,7 +25,7 @@ import MeetingRoom from "./pages/MeetingRoom";
 // }
 function Layout({children}){
   return(
-    <div className ="min-h-Screen bg-[#F0FDFA]">
+    <div className ="min-h-screen bg-[#F0FDFA]">
 <Sidebar/>
 
 <main className="ml-64">
