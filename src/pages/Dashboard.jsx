@@ -124,7 +124,7 @@ const [meetings, setMeetings] = useState( [
           {/* Main Dashboard */}
           <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Upcoming Meetings */}
-            <section className="lg:col-span-2 rounded-2xl bg-white p-6 shadow-sm">
+            <section className=" rounded-2xl bg-white p-6 shadow-sm">
 
               <div className="mb-6 flex items-center justify-between">
 
@@ -219,7 +219,7 @@ const [meetings, setMeetings] = useState( [
 
 
             {/* My Tasks */}
-<section className="lg:col-span-2 rounded-2xl bg-white p-6 shadow-sm">
+<section className="rounded-2xl bg-white p-6 shadow-sm">
 
   <div className="mb-6 flex items-center justify-between">
     <div>
@@ -313,7 +313,7 @@ const [meetings, setMeetings] = useState( [
 
 
 {/* Active Polls */}
-<section className="lg:col-span-2 rounded-2xl bg-white p-6 shadow-sm">
+<section className="rounded-2xl bg-white p-6 shadow-sm">
 
   <div className="mb-6 flex items-center justify-between">
     <div>
