@@ -1,10 +1,9 @@
 import { CalendarDays, Clock, Video, MoreHorizontal, Users, CheckCircle2, ClipboardList, BarChart3,} from "lucide-react";
 
-// import Sidebar from "../components/Sidebar";
-// import Header from "../components/Header";
  import QuickActions from "../components/QuickActions";
 
- import { useState } from "react";
+ import { useEffect,  useState } from "react";
+ import api from "../api";
 import JoinMeetingModal from "../components/JoinMeetingModal";
 import CreateRoomModal from "../components/CreateRoomModal";
 import ScheduleMeetingModal from "../components/ScheduleMeetingModal";
@@ -12,60 +11,12 @@ import NewTaskModal from "../components/NewTaskModal";
 import StartPollModal from "../components/StartPollModal";
 import { useNavigate } from "react-router-dom";
 
-function Dashboard() {
-  const navigate = useNavigate();
-const [meetings, setMeetings] = useState( [
-    {
-      id: 1,
-    roomId: "classmeet-team-standup",
-      title: "Team Standup",
-      type: "Daily Meeting",
-      time: "10:00 AM",
-      duration: "30 min",
-      members: 8,
-    },
-    {
-       id: 2,
-    roomId: "classmeet-frontend",
-      title: "Frontend Development",
-      type: "Project Meeting",
-      time: "12:00 PM",
-      duration: "60 min",
-      members: 5,
-    },
-    {
-      id: 3,
-    roomId: "classmeet-design",
-      title: "Design Discussion",
-      type: "Team Meeting",
-      time: "03:00 PM",
-      duration: "45 min",
-      members: 6,
-    },
-  ]);
 
-  const activities = [
-    {
-      name: "Aman Kumar",
-      action: "joined the meeting",
-      time: "5 min ago",
-    },
-    {
-      name: "Priya Mehta",
-      action: "completed a task",
-      time: "18 min ago",
-    },
-    {
-      name: "Rahul Singh",
-      action: "shared a file",
-      time: "32 min ago",
-    },
-    {
-      name: "Sneha Verma",
-      action: "scheduled a meeting",
-      time: "1 hour ago",
-    },
-  ];
+function Dashboard() {
+ 
+
+  const navigate = useNavigate();
+
 
   const [showJoinModal, setShowJoinModal] = useState(false);
 
@@ -78,7 +29,27 @@ const [meetings, setMeetings] = useState( [
   const [showStartPoll, setShowStartPoll] = useState(false);
 
   const [polls, setPolls] = useState([]);
+//
+const [meetings, setMeetings] = useState([]);
+const [loadingMeetings, setLoadingMeetings] = useState(true);
 
+useEffect(() => {
+  const fetchMeetings = async () => {
+    try {
+      const response = await api.get("/meetings");
+
+      setMeetings(response.data.meetings || []);
+    } catch (error) {
+      console.error("Failed to fetch meetings:", error);
+    } finally {
+      setLoadingMeetings(false);
+    }
+  };
+
+  fetchMeetings();
+}, []);
+
+//
   const handleVote = (pollId, optionIndex) => {
   setPolls((prevPolls) =>
     prevPolls.map((poll) => {
@@ -98,14 +69,31 @@ const [meetings, setMeetings] = useState( [
   );
 };
 
+
+const [activities] = useState([
+  {
+    name: "Alex",
+    action: "joined the meeting",
+    time: "10 minutes ago",
+  },
+  {
+    name: "Taylor",
+    action: "created a new task",
+    time: "25 minutes ago",
+  },
+  {
+    name: "Jordan",
+    action: "completed a task",
+    time: "1 hour ago",
+  },
+]);
+
+ 
+
   return (
     <div className="min-h-screen bg-[#F0FDFA]">
 
-      {/* <Sidebar /> */}
-
-      {/* <main className="ml-64 min-h-screen"> */}
-
-        {/* <Header /> */}
+      
 
         <div className="px-8 pb-10">
 
@@ -196,16 +184,12 @@ const [meetings, setMeetings] = useState( [
 
                       {/* Join */}
                       {/* Join Button */}
-<button
-  onClick={() => {
-    if (meeting.roomId) {
-      navigate(`/meeting/${meeting.roomId}`);
-    }
-  }}
-  className="rounded-lg bg-[#0F766E] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#134E4A]"
->
-  Join
-</button>
+              <button
+          onClick={() => navigate(`/meeting/${meeting._id}`)}
+      className="rounded-lg bg-[#0F766E] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#134E4A]"
+      >
+       Join
+        </button>
 
                     </div>
 
@@ -480,7 +464,7 @@ const [meetings, setMeetings] = useState( [
       isOpen={showJoinModal}
       onClose={() => setShowJoinModal(false)}
         onJoinMeeting={(roomId) => {
-    setShowJoinMeeting(false);
+    setShowJoinModal(false);
     navigate(`/meeting/${roomId}`);
   }}
     />

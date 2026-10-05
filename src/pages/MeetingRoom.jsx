@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import {Mic, MicOff,Video,VideoOff,MonitorUp,PhoneOff, Users,MessageSquare,MoreVertical,Copy,} from "lucide-react";
+import {Mic, MicOff,Video,VideoOff,MonitorUp,PhoneOff, Users,MessageSquare,MoreVertical,Copy,Sparkles,} from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import VideoTile from "../components/VideoTile";
@@ -8,6 +8,9 @@ import MeetingControls from "../components/MeetingControls";
 import MeetingChat from "../components/MeetingChat";
 
 import ParticipantsPanel from "../components/ParticipantsPanel";
+
+import AIMeetingSummary from "../components/AIMeetingSummary";
+import api from "../api";
 
 
 
@@ -26,7 +29,9 @@ function MeetingRoom() {
 
   const [showParticipants, setShowParticipants] = useState(false);
   const [showChat, setShowChat] = useState(false);
-
+  const [showAISummary, setShowAISummary] = useState(false);
+const [meeting, setMeeting] = useState(null);
+const [meetingLoading, setMeetingLoading] = useState(true);
 
 
   const [participants] = useState([
@@ -68,8 +73,44 @@ function MeetingRoom() {
   },
 ]);
 
+useEffect(() => {
+  const loadMeeting = async () => {
+    try {
+      setMeetingLoading(true);
+
+      const response = await api.get(`/meetings/${roomId}`);
+
+      setMeeting(response.data.meeting);
+    } catch (error) {
+      console.error("Failed to load meeting:", error);
+    } finally {
+      setMeetingLoading(false);
+    }
+  };
+
+  if (roomId) {
+    loadMeeting();
+  }
+}, [roomId]);
+
+
+useEffect(() => {
+  const joinMeeting = async () => {
+    try {
+      await api.post(`/meetings/${roomId}/join`);
+      console.log("Meeting joined successfully");
+    } catch (error) {
+      console.error("Failed to join meeting:", error);
+    }
+  };
+
+  if (roomId) {
+    joinMeeting();
+  }
+}, [roomId]);
 
   // Start camera and microphone
+
   useEffect(() => {
     const startCamera = async () => {
       try {
@@ -181,7 +222,14 @@ function MeetingRoom() {
   };
 
   // Leave meeting
-  const leaveMeeting = () => {
+ const leaveMeeting = async () => {
+  try {
+    if (roomId) {
+      await api.post(`/meetings/${roomId}/leave`);
+    }
+  } catch (error) {
+    console.error("Failed to leave meeting:", error);
+  } finally {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => {
         track.stop();
@@ -198,19 +246,23 @@ function MeetingRoom() {
     setScreenStream(null);
 
     navigate("/");
-  };
+  }
+}
 
   return (
     <div className="flex h-screen flex-col bg-[#111827] text-white">
 
-      {/* ================= TOP BAR ================= */}
+      {/* TOP BAR */}
       <header className="flex items-center justify-between border-b border-white/10 px-6 py-4">
 
         {/* Meeting Info */}
         <div>
-          <h1 className="text-lg font-semibold">
+          {/* <h1 className="text-lg font-semibold">
             ClassMeet Room
-          </h1>
+          </h1> */}
+           <h1 className="text-lg font-semibold">
+  {meeting?.title || "ClassMeet Room"}
+   </h1>
 
           <p className="mt-1 text-xs text-slate-400">
             Meeting ID: {roomId || "classmeet-room"}
@@ -231,6 +283,14 @@ function MeetingRoom() {
             Participants
           </button>
 
+          <button
+  onClick={() => setShowAISummary(true)}
+  className="flex items-center gap-2 rounded-lg bg-[#0F766E] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#134E4A]"
+>
+  <Sparkles size={18} />
+  <span>AI Summary</span>
+</button>
+
           {/* Chat */}
           <button
             onClick={() =>
@@ -249,20 +309,14 @@ function MeetingRoom() {
         </div>
       </header>
 
-      {/* ================= MAIN AREA ================= */}
+      {/* MAIN AREA */}
       <main className="relative flex flex-1 overflow-hidden">
 
-        {/* ================= VIDEO AREA ================= */}
+        {/* VIDEO AREA  */}
         <div className="flex flex-1 items-center justify-center overflow-auto p-6">
 
           <div className="w-full max-w-5xl">
 
-            {/* Screen Sharing Indicator */}
-            {/* {isSharing && (
-              <div className="mb-4 inline-flex rounded-lg bg-[#14B8A6] px-4 py-2 text-sm font-semibold">
-                You are sharing your screen
-              </div>
-            )} */}
 
             {screenStream && (
   <div className="mb-4 overflow-hidden rounded-2xl border border-white/10 bg-black">
@@ -328,7 +382,7 @@ function MeetingRoom() {
           </div>
         </div>
 
-        {/* ================= PARTICIPANTS PANEL ================= */}
+        {/* PARTICIPANTS PANEL  */}
        
           {showParticipants && (
   <ParticipantsPanel
@@ -337,7 +391,7 @@ function MeetingRoom() {
   />
         )}
 
-        {/* ================= CHAT PANEL ================= */}
+        {/*  CHAT PANEL  */}
       {showChat && (
   <MeetingChat
     onClose={() => setShowChat(false)}
@@ -355,6 +409,10 @@ function MeetingRoom() {
   onToggleScreenShare={toggleScreenShare}
   onCopyMeetingId={copyMeetingId}
   onLeaveMeeting={leaveMeeting}
+/>
+<AIMeetingSummary
+  isOpen={showAISummary}
+  onClose={() => setShowAISummary(false)}
 />
      
     </div>

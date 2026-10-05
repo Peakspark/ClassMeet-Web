@@ -13,34 +13,34 @@ import Projects from "./pages/Projects";
 import MeetingRoom from "./pages/MeetingRoom";
 import Profile from "./pages/Profile";
 
-function Layout({ children }) {
-  return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-[#F0FDFA]">
-        <Sidebar />
-
-        <main className="ml-0 md:ml-64">
-          <Header />
-          {children}
-        </main>
-      </div>
-    </ProtectedRoute>
-  );
-}
-
-
 // function Layout({ children }) {
 //   return (
-//     <div className="min-h-screen bg-[#F0FDFA]">
-//       <Sidebar />
+//     <ProtectedRoute>
+//       <div className="min-h-screen bg-[#F0FDFA]">
+//         <Sidebar />
 
-//       <main className="ml-0 md:ml-64">
-//         <Header />
-//         {children}
-//       </main>
-//     </div>
-//   );
+//         <main className="ml-0 md:ml-64">
+//           <Header />
+//           {children}
+//         </main>
+//       </div>
+//     </ProtectedRoute>
+//   );n
 // }
+
+
+function Layout({ children }) {
+  return (
+    <div className="min-h-screen bg-[#F0FDFA]">
+      <Sidebar />
+
+      <main className="ml-0 md:ml-64">
+        <Header />
+        {children}
+      </main>
+    </div>
+  );
+}
 
 function App() {
   return (
@@ -98,6 +98,10 @@ function App() {
           </ProtectedRoute>
         }
       />
+      {/* <Route
+  path="/meeting/:roomId"
+  element={<MeetingRoom />}
+/> */}
 
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />

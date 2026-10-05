@@ -235,3 +235,27 @@ export const endMeeting = async (req, res) => {
     });
   }
 };
+//
+
+export const getMeetings = async (req, res) => {
+  try {
+    const meetings = await Meeting.find({
+      participants: req.user.id,
+    })
+      .populate("host", "name email")
+      .populate("workspace", "name")
+      .sort({ scheduledAt: 1 });
+
+    res.json({
+      success: true,
+      meetings,
+    });
+  } catch (error) {
+    console.error("Get meetings error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch meetings",
+    });
+  }
+};

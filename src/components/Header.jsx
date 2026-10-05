@@ -34,7 +34,7 @@ function Header() {
         </p>
 
         <h1 className="mt-1 text-xl font-bold text-[#172033] sm:text-2xl">
-          {greeting}, {firstName} 👋
+          {greeting}, {firstName} 
         </h1>
       </div>
 
