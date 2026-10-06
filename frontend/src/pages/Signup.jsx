@@ -10,6 +10,7 @@ import {
   EyeOff,
   ArrowRight,
 } from "lucide-react";
+import { toast } from "react-toastify";
 
 function Signup() {
   const [showPassword, setShowPassword] = useState(false);
@@ -34,15 +35,17 @@ function Signup() {
       const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.password) {
-      alert("Please fill all fields");
+      // alert("Please fill all fields");
+      toast.warn("Please fill all fields")
       return;
     }
     try {
       await api.post("/auth/signup", formData);
-      alert("Account created. Please log in.");
+      // alert("Account created. Please log in.");
+      toast.success("Account created. Please log in.")
       navigate("/login");
     } catch (err) {
-      alert(err.response?.data?.message || "Could not reach the server");
+      toast.error(err.response?.data?.message || "Could not reach the server");
     }
   };
   

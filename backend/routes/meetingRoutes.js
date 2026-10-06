@@ -2,7 +2,6 @@ import express from "express";
 
 import {
   createMeeting,
-  getMeetings,
   getMeeting,
   joinMeeting,
   leaveMeeting,

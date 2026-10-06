@@ -149,22 +149,3 @@ export const login = async (req, res) => {
         });
     }
 };
-
-
-
-
-export const getMe = async (req, res) => {
-    try {
-        return res.status(200).json({
-            success: true,
-            user: req.user
-        });
-    } catch (error) {
-        console.error("Get me error:", error);
-
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error"
-        });
-    }
-};

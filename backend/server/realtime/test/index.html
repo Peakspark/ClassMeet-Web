@@ -69,19 +69,14 @@
       box.scrollTop = box.scrollHeight;
     }
     async function start() {
-        let socket;
-      if (params.get('real') === '1') {
-        socket = io({ withCredentials: true });
+      let token;
+      if (params.get('bad') === '1') {
+        token = 'this-is-a-fake-token';
       } else {
-        let token;
-        if (params.get('bad') === '1') {
-          token = 'this-is-a-fake-token';
-        } else {
-          const res = await fetch('/dev-token?name=' + name);
-          token = (await res.json()).token;
-        }
-        socket = io({ auth: { token: token } });
+        const res = await fetch('/dev-token?name=' + name);
+        token = (await res.json()).token;
       }
+      const socket = io({ auth: { token: token } });
       socket.on('connect', () => {
         status.textContent = 'Connected as ' + name + ': ' + socket.id;
       });
