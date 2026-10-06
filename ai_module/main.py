@@ -8,7 +8,6 @@ import time
 
 
 env_path = Path(__file__).resolve().parent / ".env"
-
 load_dotenv(dotenv_path=env_path)
 
 api_key = os.getenv("GEMINI_API_KEY")
@@ -20,7 +19,7 @@ if not api_key:
 
 client = genai.Client(api_key=api_key)
 
-AI_MODEL = "gemini-2.5-flash"
+AI_MODEL = "gemini-3,8-flash"
 
 
 def generate_with_retry(prompt, retries=3):

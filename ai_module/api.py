@@ -40,7 +40,7 @@ client = genai.Client(
     api_key=api_key
 )
 
-AI_MODEL = "gemini-2.5-flash"
+AI_MODEL = "gemini-3.8-flash"
 
 
 def generate_with_retry(prompt, retries=3):
