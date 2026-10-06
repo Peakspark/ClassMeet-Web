@@ -1,14 +1,14 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from openai import OpenAI
+from google import genai
+from google.genai import errors
 from dotenv import load_dotenv
 from pathlib import Path
 from transcribe import get_transcript
 import tempfile
 import os
-
-
+import time
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -20,8 +20,6 @@ app = FastAPI(
     title="ClassMeet AI Module",
     version="1.0.0"
 )
-
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -30,40 +28,51 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-
-
-api_key = os.getenv("OPENROUTER_API_KEY")
+api_key = os.getenv("GEMINI_API_KEY")
 
 if not api_key:
-    raise RuntimeError("OPENROUTER_API_KEY is not set")
+    raise RuntimeError(
+        "GEMINI_API_KEY is not set"
+    )
 
 
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
+client = genai.Client(
     api_key=api_key
 )
 
-
-AI_MODEL = "qwen/qwen3.8-27b:free"
-
+AI_MODEL = "gemini-2.5-flash"
 
 
+def generate_with_retry(prompt, retries=3):
+
+    for attempt in range(retries):
+
+        try:
+
+            return client.models.generate_content(
+                model=AI_MODEL,
+                contents=prompt
+            )
+
+        except errors.ServerError:
+
+            if attempt == retries - 1:
+                raise
+
+            wait = 2 ** attempt
+
+            time.sleep(wait)
 
 class AskRequest(BaseModel):
+
     transcript: str
     question: str
-
-
 @app.get("/")
 def home():
 
     return {
         "message": "ClassMeet AI Module is running"
     }
-
-
-
 
 @app.get("/health")
 def health():
@@ -72,23 +81,25 @@ def health():
         "status": "ok"
     }
 
-
-
-
 @app.post("/transcribe")
 async def transcribe_audio(
     audio: UploadFile = File(...)
 ):
 
-    suffix = Path(audio.filename).suffix.lower()
+    suffix = Path(
+        audio.filename
+    ).suffix.lower()
+
 
     allowed_extensions = {
+
         ".mp3",
         ".wav",
         ".m4a",
         ".mp4",
         ".webm",
         ".ogg"
+
     }
 
 
@@ -117,7 +128,9 @@ async def transcribe_audio(
             temp_file.write(content)
 
 
-        transcript = get_transcript(temp_path)
+        transcript = get_transcript(
+            temp_path
+        )
 
 
         if not transcript:
@@ -129,8 +142,10 @@ async def transcribe_audio(
 
 
         return {
+
             "success": True,
             "transcript": transcript
+
         }
 
 
@@ -149,16 +164,20 @@ async def transcribe_audio(
 
     finally:
 
-        if temp_path and os.path.exists(temp_path):
+        if (
+            temp_path
+            and os.path.exists(temp_path)
+        ):
 
             os.remove(temp_path)
 
-
-
 @app.post("/ask")
-def ask_question(data: AskRequest):
+def ask_question(
+    data: AskRequest
+):
 
     transcript = data.transcript.strip()
+
     question = data.question.strip()
 
 
@@ -211,40 +230,44 @@ Give a short and clear answer.
 
     try:
 
-        response = client.chat.completions.create(
-            model=AI_MODEL,
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ]
+        response = generate_with_retry(
+            prompt
         )
 
 
-        if not response.choices:
-
-            raise HTTPException(
-                status_code=503,
-                detail="AI model returned an empty response. Please try again."
-            )
-
-
-        answer = response.choices[0].message.content
+        answer = response.text
 
 
         if not answer:
 
             raise HTTPException(
                 status_code=503,
-                detail="AI model returned no answer. Please try again."
+                detail="Gemini returned an empty response."
             )
 
 
         return {
+
             "success": True,
             "answer": answer
+
         }
+
+
+    except errors.ClientError as e:
+
+        raise HTTPException(
+            status_code=400,
+            detail=f"Gemini API error: {str(e)}"
+        )
+
+
+    except errors.ServerError:
+
+        raise HTTPException(
+            status_code=503,
+            detail="Gemini server is currently busy."
+        )
 
 
     except HTTPException:
