@@ -4,10 +4,20 @@
 //   withCredentials: true,
 // }); 
 // export default api;
+const mode = process.env.NODE_ENV
+let baseURL = "http://localhost:3000/api";
+if(mode==="production"){
+    baseURL = "https://classmeet-web.onrender.com/api"
+}
 import axios from "axios";
 
+// const api = axios.create({
+//     baseURL: "https://classmeet-web.onrender.com/api",
+//     withCredentials: true,
+// });
+
 const api = axios.create({
-    baseURL: "https://classmeet-web.onrender.com/api",
+    baseURL: baseURL,
     withCredentials: true,
 });
 

@@ -12,11 +12,14 @@ import Messages from "./pages/Messages";
 import Projects from "./pages/Projects";
 import MeetingRoom from "./pages/MeetingRoom";
 import Profile from "./pages/Profile";
+  import { ToastContainer } from 'react-toastify';
+
 
 function Layout({ children }) {
   return (
-    <ProtectedRoute>
+    // <ProtectedRoute>
       <div className="min-h-screen bg-[#F0FDFA]">
+        <ToastContainer />
         <Sidebar />
 
         <main className="ml-0 md:ml-64">
@@ -24,7 +27,7 @@ function Layout({ children }) {
           {children}
         </main>
       </div>
-    </ProtectedRoute>
+    // </ProtectedRoute>
   );n
 }
 
