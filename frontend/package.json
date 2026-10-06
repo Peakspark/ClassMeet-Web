@@ -1,30 +1,23 @@
 {
   "name": "classmeet",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "set NODE_ENV=development&& vite",
+    "start": "set NODE_ENV=production&& vite",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"
   },
   "dependencies": {
     "axios": "^1.20.0",
-    "bcrypt": "^6.0.0",
-    "cookie-parser": "^1.4.7",
-    "cors": "^2.8.6",
-    "dotenv": "^18.0.5",
-    "express": "^5.2.1",
-    "express-rate-limit": "^8.7.0",
-    "helmet": "^8.3.0",
-    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.49.0",
-    "mongoose": "^9.10.3",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.4",
-    "socket.io": "^4.8.4"
+    "react-toastify": "^11.1.0",
+    "socket.io-client": "^4.8.4"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
@@ -34,8 +27,7 @@
     "oxlint": "^1.81.0",
     "vite": "^8.3.0"
   },
-  "description": "This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.",
-  "main": "vite.config.js",
+  "description": "ClassMeet frontend application built with React and Vite",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ShivnarayanChaurasiya/ClassMeet-Web.git"
