@@ -106,46 +106,33 @@ User Question:
 Answer based on the transcript only.
 """
 
-    for attempt in range(3):
+    models = [
+        "gemini-3.8-flash",
+        "gemini-3.5-flash-lite"
+    ]
+
+    last_error = ""
+
+    for model_name in models:
         try:
             response = await asyncio.wait_for(
                 client.aio.models.generate_content(
-                    model="gemini-3.8-flash",
+                    model=model_name,
                     contents=prompt
                 ),
                 timeout=30
             )
 
-            return {"reply": response.text}
-
-        except asyncio.TimeoutError:
-            print(f"Gemini timeout - attempt {attempt + 1}/3")
-
-            if attempt < 2:
-                await asyncio.sleep(3)
-                continue
-
-            raise HTTPException(
-                status_code=504,
-                detail="Gemini response timeout. Please try again."
-            )
+            return {
+                "reply": response.text,
+                "model_used": model_name
+            }
 
         except Exception as e:
-            error_str = str(e)
-            print("Gemini error:", error_str)
-
-            if "503" in error_str:
-                wait = (attempt + 1) * 3
-                print(f"503 - attempt {attempt + 1}/3, {wait}s wait...")
-                await asyncio.sleep(wait)
-                continue
-
-            raise HTTPException(
-                status_code=500,
-                detail=error_str
-            )
+            last_error = str(e)
+            print(f"{model_name} failed: {last_error}")
 
     raise HTTPException(
         status_code=503,
-        detail="Gemini busy hai, thodi der baad try karo."
+        detail=f"Gemini models unavailable. Last error: {last_error}"
     )
