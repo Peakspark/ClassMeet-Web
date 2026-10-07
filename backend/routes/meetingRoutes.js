@@ -1,7 +1,15 @@
 import express from "express";
 
+// import {
+//   createMeeting,
+//   getMeeting,
+//   joinMeeting,
+//   leaveMeeting,
+//   endMeeting,
+// } from "../controllers/meetingController.js";
 import {
   createMeeting,
+  getMeetings,
   getMeeting,
   joinMeeting,
   leaveMeeting,
@@ -13,6 +21,8 @@ import auth from "../middleware/auth.js";
 const router = express.Router();
 
 router.post("/", auth, createMeeting);
+
+router.get("/", auth, getMeetings);
 
 router.get("/:meetingId", auth, getMeeting);
 
