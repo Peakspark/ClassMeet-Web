@@ -94,7 +94,6 @@ async def transcribe(file: UploadFile = File(...)):
 
 @app.post("/ask")
 async def ask(req: AskRequest):
-
     prompt = f"""
 You are an AI Meeting Assistant.
 
@@ -107,47 +106,46 @@ User Question:
 Answer based on the transcript only.
 """
 
-    for attempt in range(5):
-
+    for attempt in range(3):
         try:
-
-            response = client.models.generate_content(
-                model="gemini-3.8-flash",
-                contents=prompt
+            response = await asyncio.wait_for(
+                client.aio.models.generate_content(
+                    model="gemini-3.8-flash",
+                    contents=prompt
+                ),
+                timeout=30
             )
 
-            return {
-                "reply": response.text
-            }
+            return {"reply": response.text}
 
+        except asyncio.TimeoutError:
+            print(f"Gemini timeout - attempt {attempt + 1}/3")
 
-        except Exception as e:
-
-            error_str = str(e)
-
-            if "503" in error_str:
-
-                wait = (attempt + 1) * 5
-                # 5, 10, 15, 20, 25 seconds
-
-                print(
-                    f"503 - attempt {attempt + 1}/5, "
-                    f"{wait}s wait kar raha..."
-                )
-
-                await asyncio.sleep(wait)
-
+            if attempt < 2:
+                await asyncio.sleep(3)
                 continue
 
-            else:
+            raise HTTPException(
+                status_code=504,
+                detail="Gemini response timeout. Please try again."
+            )
 
-                raise HTTPException(
-                    status_code=500,
-                    detail=error_str
-                )
+        except Exception as e:
+            error_str = str(e)
+            print("Gemini error:", error_str)
 
+            if "503" in error_str:
+                wait = (attempt + 1) * 3
+                print(f"503 - attempt {attempt + 1}/3, {wait}s wait...")
+                await asyncio.sleep(wait)
+                continue
+
+            raise HTTPException(
+                status_code=500,
+                detail=error_str
+            )
 
     raise HTTPException(
         status_code=503,
-        detail="Gemini server busy please try again later"
+        detail="Gemini busy hai, thodi der baad try karo."
     )
