@@ -5,57 +5,13 @@ function JoinMeetingModal({
   isOpen,
   onClose,
   onJoinMeeting,
-}) {
+ }) {
   const [meetingId, setMeetingId] = useState("");
   const [copied, setCopied] = useState(false);
 
   if (!isOpen) {
     return null;
   }
-
-  // =========================
-  // EXTRACT MEETING TOKEN
-  // =========================
-
-  const getMeetingToken = (value) => {
-    let input = value.trim();
-
-    if (!input) {
-      return "";
-    }
-
-    // If user pasted a full URL
-    if (
-      input.startsWith("http://") ||
-      input.startsWith("https://")
-    ) {
-      try {
-        const url = new URL(input);
-
-        const parts = url.pathname
-          .split("/")
-          .filter(Boolean);
-
-        // Example:
-        // /meeting/classmeet-1791450055939
-        //
-        // Result:
-        // classmeet-1791450055939
-
-        return parts[parts.length - 1] || "";
-      } catch (error) {
-        console.error(
-          "Invalid meeting URL:",
-          error
-        );
-
-        return "";
-      }
-    }
-
-    // If user entered only the meeting ID/token
-    return input;
-  };
 
   // =========================
   // JOIN MEETING
@@ -65,60 +21,69 @@ function JoinMeetingModal({
     e.preventDefault();
 
     if (!meetingId.trim()) {
-      alert(
-        "Please enter a meeting ID or meeting link."
+      alert("Please enter a meeting ID or meeting link.");
+      return;
+    }
+
+    let value = meetingId.trim();
+
+    /*
+      If user pastes a complete URL:
+
+      https://class-meet-web.vercel.app/meeting/abc123
+
+      extract only:
+
+      abc123
+    */
+
+    try {
+      if (value.startsWith("http")) {
+        const url = new URL(value);
+
+        const parts = url.pathname
+          .split("/")
+          .filter(Boolean);
+
+        const meetingToken =
+          parts[parts.length - 1];
+
+        if (meetingToken) {
+          value = meetingToken;
+        }
+      }
+    } catch (error) {
+      console.log(
+        "Input is not a full URL, using it as meeting ID."
       );
-      return;
     }
 
-    const meetingToken =
-      getMeetingToken(meetingId);
-
-    if (!meetingToken) {
-      alert("Invalid meeting link.");
-      return;
-    }
-
-    console.log(
-      "Joining meeting:",
-      meetingToken
-    );
-
-    // Close modal
-    onClose();
-
-    // Navigate to:
-    // /meeting/<meetingToken>
-    onJoinMeeting(meetingToken);
+    onJoinMeeting(value);
 
     setMeetingId("");
   };
 
   // =========================
-  // COPY MEETING LINK
+  // COPY SAMPLE / CURRENT LINK
   // =========================
 
   const copyCurrentLink = async () => {
     if (!meetingId.trim()) {
-      alert(
-        "Enter a meeting ID first."
-      );
+      alert("Enter a meeting ID first.");
       return;
     }
 
-    const meetingToken =
-      getMeetingToken(meetingId);
-
-    if (!meetingToken) {
-      alert("Invalid meeting ID or link.");
-      return;
-    }
-
-    const link =
-      `${window.location.origin}/meeting/${meetingToken}`;
+    let value = meetingId.trim();
 
     try {
-      await navigator.clipboard.writeText(link);
+      if (value.startsWith("http")) {
+        await navigator.clipboard.writeText(value);
+      } else {
+        const link =
+          `${window.location.origin}/meeting/${value}`;
+
+        await navigator.clipboard.writeText(link);
+      }
 
       setCopied(true);
 
@@ -131,25 +96,6 @@ function JoinMeetingModal({
         error
       );
     }
-  };
-
-  // =========================
-  // DISPLAY LINK
-  // =========================
-
-  const displayMeetingLink = () => {
-    if (!meetingId.trim()) {
-      return "";
-    }
-
-    const meetingToken =
-      getMeetingToken(meetingId);
-
-    if (!meetingToken) {
-      return "";
-    }
-
-    return `${window.location.origin}/meeting/${meetingToken}`;
   };
 
   return (
@@ -174,7 +120,6 @@ function JoinMeetingModal({
           </div>
 
           <button
-            type="button"
             onClick={onClose}
             className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
           >
@@ -184,12 +129,10 @@ function JoinMeetingModal({
         </div>
 
         {/* =========================
-            FORM
+            MEETING ID / LINK
         ========================= */}
 
         <form onSubmit={handleJoin}>
-
-          {/* MEETING ID */}
 
           <div className="mt-6">
 
@@ -203,26 +146,34 @@ function JoinMeetingModal({
               onChange={(e) =>
                 setMeetingId(e.target.value)
               }
-              placeholder="e.g. classmeet-1791450055939"
+              placeholder="Paste meeting ID or meeting link"
               className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-[#0F766E] focus:ring-2 focus:ring-teal-100"
               autoFocus
             />
 
           </div>
 
-          {/* SHARE LINK */}
+          {/* =========================
+              COPY LINK
+          ========================= */}
 
           <div className="mt-4">
 
             <label className="mb-2 block text-sm font-medium text-[#172033]">
-              Meeting Link
+              Share Meeting Link
             </label>
 
             <div className="flex items-center gap-2">
 
               <input
                 type="text"
-                value={displayMeetingLink()}
+                value={
+                  meetingId.trim()
+                    ? meetingId.startsWith("http")
+                      ? meetingId
+                      : `${window.location.origin}/meeting/${meetingId}`
+                    : ""
+                }
                 placeholder="Meeting link will appear here"
                 readOnly
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 outline-none"
@@ -247,15 +198,19 @@ function JoinMeetingModal({
 
           </div>
 
-          {/* JOIN BUTTON */}
+          {/* =========================
+              JOIN BUTTON
+          ========================= */}
 
           <button
             type="submit"
             className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0F766E] py-3 font-semibold text-white transition hover:bg-[#134E4A]"
           >
+
             <Video size={18} />
 
             Join Meeting
+
           </button>
 
         </form>
