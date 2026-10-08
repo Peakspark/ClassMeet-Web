@@ -22,111 +22,54 @@ import { useEffect, useState } from "react";
 function Dashboard() {
   const navigate = useNavigate();
 
+  // =========================
+  // USER
+  // =========================
+
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
   // =========================
   // MEETINGS
   // =========================
-  const [meetings, setMeetings] = useState([
-    {
-      id: 1,
-      roomId: "classmeet-team-standup",
-      meetingLink: "classmeet-team-standup",
-      title: "Team Standup",
-      type: "Daily Meeting",
-      time: "10:00 AM",
-      duration: "30 min",
-      members: 8,
-    },
-    {
-      id: 2,
-      roomId: "classmeet-frontend",
-      meetingLink: "classmeet-frontend",
-      title: "Frontend Development",
-      type: "Project Meeting",
-      time: "12:00 PM",
-      duration: "60 min",
-      members: 5,
-    },
-    {
-      id: 3,
-      roomId: "classmeet-design",
-      meetingLink: "classmeet-design",
-      title: "Design Discussion",
-      type: "Team Meeting",
-      time: "03:00 PM",
-      duration: "45 min",
-      members: 6,
-    },
-  ]);
+
+  const [meetings, setMeetings] = useState([]);
 
   // =========================
-  // FETCH LOGGED-IN USER
+  // MODALS
   // =========================
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await fetch(`${API_URL}/api/auth/me`, {
-          method: "GET",
-          credentials: "include",
-        });
 
-        const data = await response.json();
+  const [showJoinModal, setShowJoinModal] =
+    useState(false);
 
-        console.log("Logged in user:", data);
+  const [showCreateRoom, setShowCreateRoom] =
+    useState(false);
 
-        if (!response.ok) {
-          console.log("User is not authenticated");
-          navigate("/login");
-          return;
-        }
+  const [showScheduleMeeting, setShowScheduleMeeting] =
+    useState(false);
 
-        setUser(data.user);
-      } catch (error) {
-        console.error("Error fetching user:", error);
-      } finally {
-        setLoadingUser(false);
-      }
-    };
+  const [showNewTask, setShowNewTask] =
+    useState(false);
 
-    fetchUser();
-  }, [navigate]);
+  const [showStartPoll, setShowStartPoll] =
+    useState(false);
 
   // =========================
-  // FETCH MEETINGS
+  // TASKS
   // =========================
-  useEffect(() => {
-    const fetchMeetings = async () => {
-      try {
-        const response = await fetch(`${API_URL}/api/meetings`, {
-          method: "GET",
-          credentials: "include",
-        });
 
-        const data = await response.json();
+  const [tasks, setTasks] = useState([]);
 
-        console.log("Meetings:", data);
+  // =========================
+  // POLLS
+  // =========================
 
-        if (!response.ok) {
-          console.error(
-            data.message || "Failed to fetch meetings"
-          );
-          return;
-        }
-
-        setMeetings(data.meetings || []);
-      } catch (error) {
-        console.error("Error fetching meetings:", error);
-      }
-    };
-
-    fetchMeetings();
-  }, []);
+  const [polls, setPolls] = useState([]);
 
   // =========================
   // ACTIVITIES
   // =========================
+
   const activities = [
     {
       name: "Aman Kumar",
@@ -151,37 +94,134 @@ function Dashboard() {
   ];
 
   // =========================
-  // MODAL STATES
+  // FETCH USER
   // =========================
-  const [showJoinModal, setShowJoinModal] = useState(false);
 
-  const [showCreateRoom, setShowCreateRoom] = useState(false);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch(
+          `${API_URL}/api/auth/me`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
 
-  const [showScheduleMeeting, setShowScheduleMeeting] =
-    useState(false);
+        const data = await response.json();
 
-  const [showNewTask, setShowNewTask] = useState(false);
+        console.log("Logged in user:", data);
 
-  const [showStartPoll, setShowStartPoll] = useState(false);
+        if (!response.ok) {
+          navigate("/login");
+          return;
+        }
+
+        setUser(data.user);
+      } catch (error) {
+        console.error(
+          "Error fetching user:",
+          error
+        );
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+
+    fetchUser();
+  }, [navigate]);
 
   // =========================
-  // TASKS
+  // FETCH MEETINGS
   // =========================
-  const [tasks, setTasks] = useState([]);
+
+  useEffect(() => {
+    const fetchMeetings = async () => {
+      try {
+        const response = await fetch(
+          `${API_URL}/api/meetings`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
+
+        const data = await response.json();
+
+        console.log(
+          "Meetings from backend:",
+          data
+        );
+
+        if (!response.ok) {
+          console.error(
+            data.message ||
+              "Failed to fetch meetings"
+          );
+
+          return;
+        }
+
+        setMeetings(
+          Array.isArray(data.meetings)
+            ? data.meetings
+            : []
+        );
+      } catch (error) {
+        console.error(
+          "Error fetching meetings:",
+          error
+        );
+      }
+    };
+
+    fetchMeetings();
+  }, []);
 
   // =========================
-  // POLLS
+  // JOIN MEETING
   // =========================
-  const [polls, setPolls] = useState([]);
 
-  const handleVote = (pollId, optionIndex) => {
+  const handleJoinMeeting = (meeting) => {
+    console.log(
+      "Joining meeting:",
+      meeting
+    );
+
+    const meetingToken =
+      meeting?.meetingLink ||
+      meeting?.roomId ||
+      meeting?._id;
+
+    if (!meetingToken) {
+      alert(
+        "This meeting does not have a valid meeting ID."
+      );
+      return;
+    }
+
+    navigate(
+      `/meeting/${meetingToken}`
+    );
+  };
+
+  // =========================
+  // VOTE
+  // =========================
+
+  const handleVote = (
+    pollId,
+    optionIndex
+  ) => {
     setPolls((prevPolls) =>
       prevPolls.map((poll) => {
         if (poll.id !== pollId) {
           return poll;
         }
 
-        const updatedVotes = [...poll.votes];
+        const updatedVotes = [
+          ...poll.votes,
+        ];
 
         updatedVotes[optionIndex] += 1;
 
@@ -194,54 +234,42 @@ function Dashboard() {
   };
 
   // =========================
-  // JOIN MEETING FROM DASHBOARD
+  // RENDER
   // =========================
-  const handleJoinMeeting = (meeting) => {
-    /*
-      Prefer the backend-generated meetingLink/token.
-
-      Example:
-      meetingLink = "550e8400-e29b-41d4-a716-446655440000"
-
-      URL becomes:
-      /meeting/550e8400-e29b-41d4-a716-446655440000
-    */
-
-    if (meeting.meetingLink) {
-      navigate(`/meeting/${meeting.meetingLink}`);
-      return;
-    }
-
-    // Fallback for older meetings
-    if (meeting.roomId) {
-      navigate(`/meeting/${meeting.roomId}`);
-      return;
-    }
-
-    console.error("No meeting link or room ID found.");
-  };
 
   return (
     <div className="min-h-screen bg-[#F0FDFA]">
+
       <div className="px-8 pb-10">
 
         {/* =========================
             QUICK ACTIONS
         ========================= */}
+
         <QuickActions
-          onJoinMeeting={() => setShowJoinModal(true)}
-          onCreateRoom={() => setShowCreateRoom(true)}
+          onJoinMeeting={() =>
+            setShowJoinModal(true)
+          }
+          onCreateRoom={() =>
+            setShowCreateRoom(true)
+          }
           onScheduleMeeting={() =>
             setShowScheduleMeeting(true)
           }
-          onNewTask={() => setShowNewTask(true)}
-          onStartPoll={() => setShowStartPoll(true)}
+          onNewTask={() =>
+            setShowNewTask(true)
+          }
+          onStartPoll={() =>
+            setShowStartPoll(true)
+          }
         />
 
         {/* =========================
-            WELCOME USER
+            WELCOME
         ========================= */}
+
         <div className="mt-6 mb-4">
+
           {loadingUser ? (
             <h1 className="text-2xl font-bold text-[#172033]">
               Loading...
@@ -256,23 +284,29 @@ function Dashboard() {
             </h1>
           )}
 
-          <p className="text-gray-500 mt-1">
-            Here's what's happening in your ClassMeet workspace.
+          <p className="mt-1 text-gray-500">
+            Here's what's happening in your
+            ClassMeet workspace.
           </p>
+
         </div>
 
         {/* =========================
-            MAIN DASHBOARD
+            MAIN GRID
         ========================= */}
+
         <div className="mt-8 grid grid-cols-3 gap-6">
 
           {/* =========================
               UPCOMING MEETINGS
           ========================= */}
+
           <section className="col-span-2 rounded-2xl bg-white p-6 shadow-sm">
 
             <div className="mb-6 flex items-center justify-between">
+
               <div>
+
                 <h2 className="text-lg font-bold text-[#172033]">
                   Upcoming Meetings
                 </h2>
@@ -280,17 +314,21 @@ function Dashboard() {
                 <p className="mt-1 text-sm text-slate-500">
                   Your meetings scheduled for today
                 </p>
+
               </div>
 
               <button className="text-sm font-semibold text-[#0F766E] hover:underline">
                 View All
               </button>
+
             </div>
 
             <div className="space-y-3">
 
               {meetings.length === 0 ? (
+
                 <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 py-8">
+
                   <CalendarDays
                     size={32}
                     className="text-slate-300"
@@ -301,95 +339,146 @@ function Dashboard() {
                   </p>
 
                   <p className="mt-1 text-xs text-slate-400">
-                    Create or schedule a meeting to get started
+                    Create or schedule a meeting
+                    to get started
                   </p>
+
                 </div>
+
               ) : (
-                meetings.map((meeting) => (
-                  <div
-                    key={meeting._id || meeting.id || meeting.title}
-                    className="flex items-center justify-between rounded-xl border border-slate-100 p-4 transition hover:border-teal-100 hover:bg-[#F0FDFA]"
-                  >
 
-                    {/* Meeting Info */}
-                    <div className="flex items-center gap-4">
+                meetings.map((meeting) => {
 
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-50">
-                        <CalendarDays
-                          size={20}
-                          className="text-[#0F766E]"
-                        />
-                      </div>
+                  const meetingToken =
+                    meeting?.meetingLink ||
+                    meeting?.roomId ||
+                    meeting?._id;
 
-                      <div>
-                        <h3 className="text-sm font-semibold text-[#172033]">
-                          {meeting.title}
-                        </h3>
+                  return (
+                    <div
+                      key={
+                        meeting._id ||
+                        meeting.id ||
+                        meetingToken
+                      }
+                      className="flex items-center justify-between rounded-xl border border-slate-100 p-4 transition hover:border-teal-100 hover:bg-[#F0FDFA]"
+                    >
 
-                        <p className="mt-1 text-xs text-slate-400">
-                          {meeting.type || "Meeting"}
-                        </p>
-                      </div>
+                      {/* MEETING INFO */}
 
-                    </div>
+                      <div className="flex items-center gap-4">
 
-                    {/* Time / Members / Join */}
-                    <div className="flex items-center gap-6">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-50">
 
-                      <div>
-                        <div className="flex items-center gap-2 text-sm font-medium text-[#172033]">
-                          <Clock size={15} />
+                          <CalendarDays
+                            size={20}
+                            className="text-[#0F766E]"
+                          />
 
-                          {meeting.time ||
-                            (meeting.scheduledAt
-                              ? new Date(
-                                  meeting.scheduledAt
-                                ).toLocaleTimeString([], {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })
-                              : "Time not set")}
                         </div>
 
-                        <p className="mt-1 text-xs text-slate-400">
-                          {meeting.duration || "Meeting"}
-                        </p>
+                        <div>
+
+                          <h3 className="text-sm font-semibold text-[#172033]">
+                            {meeting.title ||
+                              "ClassMeet Meeting"}
+                          </h3>
+
+                          <p className="mt-1 text-xs text-slate-400">
+                            {meeting.type ||
+                              "Meeting"}
+                          </p>
+
+                        </div>
+
                       </div>
 
-                      {/* Members */}
-                      <div className="flex items-center gap-1 text-xs text-slate-500">
-                        <Users size={15} />
+                      {/* TIME / MEMBERS / JOIN */}
 
-                        {meeting.members ||
-                          meeting.participants?.length ||
-                          1}
+                      <div className="flex items-center gap-6">
+
+                        {/* TIME */}
+
+                        <div>
+
+                          <div className="flex items-center gap-2 text-sm font-medium text-[#172033]">
+
+                            <Clock size={15} />
+
+                            {meeting.time ||
+                              (
+                                meeting.scheduledAt
+                                  ? new Date(
+                                      meeting.scheduledAt
+                                    ).toLocaleTimeString(
+                                      [],
+                                      {
+                                        hour: "2-digit",
+                                        minute:
+                                          "2-digit",
+                                      }
+                                    )
+                                  : "Time not set"
+                              )}
+
+                          </div>
+
+                          <p className="mt-1 text-xs text-slate-400">
+                            {meeting.duration ||
+                              "Meeting"}
+                          </p>
+
+                        </div>
+
+                        {/* MEMBERS */}
+
+                        <div className="flex items-center gap-1 text-xs text-slate-500">
+
+                          <Users size={15} />
+
+                          {meeting.members ||
+                            meeting.participants
+                              ?.length ||
+                            1}
+
+                        </div>
+
+                        {/* JOIN */}
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleJoinMeeting(
+                              meeting
+                            )
+                          }
+                          className="rounded-lg bg-[#0F766E] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#134E4A]"
+                        >
+                          Join
+                        </button>
+
                       </div>
-
-                      {/* JOIN BUTTON */}
-                      <button
-                        onClick={() =>
-                          handleJoinMeeting(meeting)
-                        }
-                        className="rounded-lg bg-[#0F766E] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#134E4A]"
-                      >
-                        Join
-                      </button>
 
                     </div>
-                  </div>
-                ))
+                  );
+                })
+
               )}
 
             </div>
+
           </section>
 
           {/* =========================
               MY TASKS
           ========================= */}
+
           <section className="col-span-2 rounded-2xl bg-white p-6 shadow-sm">
 
             <div className="mb-6 flex items-center justify-between">
+
               <div>
+
                 <h2 className="text-lg font-bold text-[#172033]">
                   My Tasks
                 </h2>
@@ -397,14 +486,17 @@ function Dashboard() {
                 <p className="mt-1 text-sm text-slate-500">
                   Tasks created by you
                 </p>
+
               </div>
 
               <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-[#0F766E]">
                 {tasks.length} Tasks
               </span>
+
             </div>
 
             {tasks.length === 0 ? (
+
               <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 py-8">
 
                 <ClipboardList
@@ -421,25 +513,31 @@ function Dashboard() {
                 </p>
 
               </div>
+
             ) : (
+
               <div className="space-y-3">
 
                 {tasks.map((task) => (
+
                   <div
                     key={task.id}
-                    className="flex items-center justify-between rounded-xl border border-slate-100 p-4 transition hover:border-teal-100 hover:bg-[#F0FDFA]"
+                    className="flex items-center justify-between rounded-xl border border-slate-100 p-4"
                   >
 
                     <div className="flex items-center gap-4">
 
                       <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-50">
+
                         <ClipboardList
                           size={20}
                           className="text-[#0F766E]"
                         />
+
                       </div>
 
                       <div>
+
                         <h3 className="text-sm font-semibold text-[#172033]">
                           {task.title}
                         </h3>
@@ -447,6 +545,7 @@ function Dashboard() {
                         <p className="mt-1 text-xs text-slate-400">
                           Due: {task.dueDate}
                         </p>
+
                       </div>
 
                     </div>
@@ -455,9 +554,11 @@ function Dashboard() {
 
                       <span
                         className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                          task.priority === "High"
+                          task.priority ===
+                          "High"
                             ? "bg-red-50 text-red-600"
-                            : task.priority === "Medium"
+                            : task.priority ===
+                              "Medium"
                             ? "bg-orange-50 text-orange-600"
                             : "bg-green-50 text-green-600"
                         }`}
@@ -472,9 +573,11 @@ function Dashboard() {
                     </div>
 
                   </div>
+
                 ))}
 
               </div>
+
             )}
 
           </section>
@@ -482,18 +585,22 @@ function Dashboard() {
           {/* =========================
               ACTIVE POLLS
           ========================= */}
+
           <section className="col-span-2 rounded-2xl bg-white p-6 shadow-sm">
 
             <div className="mb-6 flex items-center justify-between">
 
               <div>
+
                 <h2 className="text-lg font-bold text-[#172033]">
                   Active Polls
                 </h2>
 
                 <p className="mt-1 text-sm text-slate-500">
-                  Ask and collect responses from your team
+                  Ask and collect responses
+                  from your team
                 </p>
+
               </div>
 
               <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-[#0F766E]">
@@ -503,6 +610,7 @@ function Dashboard() {
             </div>
 
             {polls.length === 0 ? (
+
               <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 py-8">
 
                 <BarChart3
@@ -519,16 +627,18 @@ function Dashboard() {
                 </p>
 
               </div>
+
             ) : (
+
               <div className="space-y-4">
 
                 {polls.map((poll) => (
+
                   <div
                     key={poll.id}
-                    className="rounded-xl border border-slate-100 p-4 transition hover:border-teal-100 hover:bg-[#F0FDFA]"
+                    className="rounded-xl border border-slate-100 p-4"
                   >
 
-                    {/* Question */}
                     <div className="flex items-start gap-3">
 
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50">
@@ -554,11 +664,11 @@ function Dashboard() {
 
                     </div>
 
-                    {/* Options */}
                     <div className="mt-4 space-y-2">
 
                       {poll.options.map(
                         (option, index) => (
+
                           <button
                             key={option}
                             onClick={() =>
@@ -567,25 +677,35 @@ function Dashboard() {
                                 index
                               )
                             }
-                            className="flex w-full items-center justify-between rounded-xl border border-slate-200 px-4 py-3 text-left text-sm text-slate-600 transition hover:border-[#0F766E] hover:bg-teal-50"
+                            className="flex w-full items-center justify-between rounded-xl border border-slate-200 px-4 py-3 text-left text-sm text-slate-600 hover:border-[#0F766E] hover:bg-teal-50"
                           >
 
-                            <span>{option}</span>
+                            <span>
+                              {option}
+                            </span>
 
                             <span className="text-xs text-slate-400">
-                              {poll.votes[index]} votes
+                              {
+                                poll.votes[
+                                  index
+                                ]
+                              }{" "}
+                              votes
                             </span>
 
                           </button>
+
                         )
                       )}
 
                     </div>
 
                   </div>
+
                 ))}
 
               </div>
+
             )}
 
           </section>
@@ -593,6 +713,7 @@ function Dashboard() {
           {/* =========================
               TODAY'S ACTIVITY
           ========================= */}
+
           <section className="rounded-2xl bg-white p-6 shadow-sm">
 
             <div className="mb-6 flex items-center justify-between">
@@ -622,43 +743,50 @@ function Dashboard() {
 
             <div className="space-y-5">
 
-              {activities.map((activity) => (
-                <div
-                  key={`${activity.name}-${activity.time}`}
-                  className="flex gap-3"
-                >
+              {activities.map(
+                (activity) => (
 
-                  {/* Avatar */}
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-50 text-sm font-semibold text-[#0F766E]">
-                    {activity.name.charAt(0)}
+                  <div
+                    key={`${activity.name}-${activity.time}`}
+                    className="flex gap-3"
+                  >
+
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-50 text-sm font-semibold text-[#0F766E]">
+                      {activity.name.charAt(
+                        0
+                      )}
+                    </div>
+
+                    <div className="min-w-0">
+
+                      <p className="text-sm text-[#172033]">
+
+                        <span className="font-semibold">
+                          {activity.name}
+                        </span>{" "}
+
+                        {activity.action}
+
+                      </p>
+
+                      <p className="mt-1 text-xs text-slate-400">
+                        {activity.time}
+                      </p>
+
+                    </div>
+
                   </div>
 
-                  <div className="min-w-0">
-
-                    <p className="text-sm text-[#172033]">
-
-                      <span className="font-semibold">
-                        {activity.name}
-                      </span>{" "}
-
-                      {activity.action}
-
-                    </p>
-
-                    <p className="mt-1 text-xs text-slate-400">
-                      {activity.time}
-                    </p>
-
-                  </div>
-
-                </div>
-              ))}
+                )
+              )}
 
             </div>
 
-            <button className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+            <button className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50">
 
-              <CheckCircle2 size={16} />
+              <CheckCircle2
+                size={16}
+              />
 
               View All Activity
 
@@ -667,63 +795,109 @@ function Dashboard() {
           </section>
 
         </div>
+
       </div>
 
       {/* =========================
           JOIN MEETING MODAL
       ========================= */}
+
       <JoinMeetingModal
         isOpen={showJoinModal}
-        onClose={() => setShowJoinModal(false)}
-        onJoinMeeting={(roomId) => {
+        onClose={() =>
+          setShowJoinModal(false)
+        }
+        onJoinMeeting={(meetingId) => {
+
+          console.log(
+            "Join meeting:",
+            meetingId
+          );
+
           setShowJoinModal(false);
 
-          if (roomId) {
-            navigate(`/meeting/${roomId}`);
+          if (!meetingId) {
+            alert(
+              "Please enter a meeting ID or link."
+            );
+            return;
           }
+
+          navigate(
+            `/meeting/${meetingId}`
+          );
         }}
       />
 
       {/* =========================
-          CREATE ROOM MODAL
+          CREATE ROOM
       ========================= */}
+
       <CreateRoomModal
         isOpen={showCreateRoom}
-        onClose={() => setShowCreateRoom(false)}
+        onClose={() =>
+          setShowCreateRoom(false)
+        }
         onCreateRoom={(newRoom) => {
+
+          console.log(
+            "Created room:",
+            newRoom
+          );
+
           setShowCreateRoom(false);
 
-          if (newRoom?.meetingLink) {
-            navigate(`/meeting/${newRoom.meetingLink}`);
-          } else if (newRoom?.id) {
-            navigate(`/meeting/${newRoom.id}`);
+          const roomId =
+            newRoom?.meetingLink ||
+            newRoom?.roomId ||
+            newRoom?.id;
+
+          if (!roomId) {
+            alert(
+              "Room was created but no meeting ID was returned."
+            );
+            return;
           }
+
+          navigate(
+            `/meeting/${roomId}`
+          );
         }}
       />
 
       {/* =========================
-          SCHEDULE MEETING MODAL
+          SCHEDULE MEETING
       ========================= */}
+
       <ScheduleMeetingModal
         isOpen={showScheduleMeeting}
-        onClose={() => setShowScheduleMeeting(false)}
+        onClose={() =>
+          setShowScheduleMeeting(false)
+        }
         onSchedule={(newMeeting) => {
+
           setMeetings((prev) => [
             ...prev,
             newMeeting,
           ]);
 
-          setShowScheduleMeeting(false);
+          setShowScheduleMeeting(
+            false
+          );
         }}
       />
 
       {/* =========================
-          NEW TASK MODAL
+          NEW TASK
       ========================= */}
+
       <NewTaskModal
         isOpen={showNewTask}
-        onClose={() => setShowNewTask(false)}
+        onClose={() =>
+          setShowNewTask(false)
+        }
         onCreateTask={(newTask) => {
+
           setTasks((prev) => [
             ...prev,
             newTask,
@@ -734,12 +908,16 @@ function Dashboard() {
       />
 
       {/* =========================
-          START POLL MODAL
+          START POLL
       ========================= */}
+
       <StartPollModal
         isOpen={showStartPoll}
-        onClose={() => setShowStartPoll(false)}
+        onClose={() =>
+          setShowStartPoll(false)
+        }
         onCreatePoll={(newPoll) => {
+
           setPolls((prev) => [
             ...prev,
             newPoll,
