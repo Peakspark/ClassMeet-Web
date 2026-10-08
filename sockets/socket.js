@@ -1,5 +1,5 @@
 // WEBRTC MEETING
-
+export const initializeSocket = (io) => {
 socket.on("join-meeting", (meetingId) => {
   socket.join(`meeting:${meetingId}`);
 
@@ -102,3 +102,4 @@ socket.on(
     );
   }
 );
+}
