@@ -1,136 +1,146 @@
 import { useState } from "react";
 import { Send, X } from "lucide-react";
 
-function MeetingChat({ onClose }) {
+function MeetingChat({
+  messages = [],
+  socket,
+  meetingId,
+  onClose,
+}) {
   const [message, setMessage] = useState("");
 
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: "Alex",
-      text: "Hello everyone!",
-      own: false,
-    },
-    {
-      id: 2,
-      sender: "Demo User",
-      text: "Hello! Good to see everyone.",
-      own: true,
-    },
-  ]);
+  const sendMessage = (e) => {
+    e.preventDefault();
 
-  const sendMessage = () => {
-    const trimmedMessage = message.trim();
+    const text = message.trim();
 
-    if (!trimmedMessage) return;
+    if (!text || !socket) return;
 
-    const newMessage = {
-      id: Date.now(),
-      sender: "Demo User",
-      text: trimmedMessage,
-      own: true,
-    };
-
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      newMessage,
-    ]);
+    socket.emit("send-message", {
+      meetingId,
+      message: text,
+      sender: "You",
+    });
 
     setMessage("");
   };
 
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter") {
-      sendMessage();
-    }
-  };
-
   return (
-    <aside className="absolute right-0 top-0 z-20 flex h-full w-80 flex-col border-l border-white/10 bg-[#172033]">
+    <div className="absolute right-0 top-0 z-20 flex h-full w-80 flex-col border-l border-white/10 bg-[#111827]">
 
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/10 p-5">
+      {/* HEADER */}
+      <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
 
         <div>
           <h2 className="font-semibold">
-            Meeting Chat
+            Messages
           </h2>
 
-          <p className="mt-1 text-xs text-slate-400">
-            Messages from this meeting
+          <p className="text-xs text-slate-400">
+            Meeting chat
           </p>
         </div>
 
         <button
           onClick={onClose}
-          className="rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
+          className="rounded-lg p-2 hover:bg-white/10"
         >
           <X size={18} />
         </button>
 
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 space-y-4 overflow-y-auto p-5">
+      {/* MESSAGES */}
+      <div className="flex-1 space-y-3 overflow-y-auto p-4">
 
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex ${
-              msg.own ? "justify-end" : "justify-start"
-            }`}
-          >
+        {messages.length === 0 && (
+          <div className="flex h-full items-center justify-center text-center text-sm text-slate-500">
+            No messages yet.
+            <br />
+            Start the conversation.
+          </div>
+        )}
 
+        {messages.map((item) => {
+          const isMe =
+            item.socketId === socket?.id;
+
+          return (
             <div
-              className={`max-w-[80%] rounded-xl px-3 py-2 ${
-                msg.own
-                  ? "bg-[#0F766E]"
-                  : "bg-white/10"
+              key={item.id}
+              className={`flex ${
+                isMe
+                  ? "justify-end"
+                  : "justify-start"
               }`}
             >
+              <div
+                className={`max-w-[80%] rounded-xl px-3 py-2 ${
+                  isMe
+                    ? "bg-[#14B8A6] text-white"
+                    : "bg-white/10 text-slate-200"
+                }`}
+              >
+                {!isMe && (
+                  <p className="mb-1 text-xs font-semibold text-[#14B8A6]">
+                    {item.sender || "Participant"}
+                  </p>
+                )}
 
-              <p className="text-xs text-slate-300">
-                {msg.sender}
-              </p>
+                <p className="break-words text-sm">
+                  {item.message}
+                </p>
 
-              <p className="mt-1 break-words text-sm">
-                {msg.text}
-              </p>
+                <p
+                  className={`mt-1 text-[10px] ${
+                    isMe
+                      ? "text-white/70"
+                      : "text-slate-500"
+                  }`}
+                >
+                  {new Date(
+                    item.createdAt
+                  ).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
 
+              </div>
             </div>
-
-          </div>
-        ))}
+          );
+        })}
 
       </div>
 
-      {/* Input */}
-      <div className="border-t border-white/10 p-4">
-
+      {/* INPUT */}
+      <form
+        onSubmit={sendMessage}
+        className="border-t border-white/10 p-3"
+      >
         <div className="flex items-center gap-2">
 
           <input
-            type="text"
             value={message}
-            onChange={(event) => setMessage(event.target.value)}
-            onKeyDown={handleKeyDown}
+            onChange={(e) =>
+              setMessage(e.target.value)
+            }
             placeholder="Type a message..."
-            className="min-w-0 flex-1 rounded-lg bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-400 focus:ring-1 focus:ring-[#14B8A6]"
+            className="min-w-0 flex-1 rounded-lg bg-white/10 px-3 py-2.5 text-sm text-white outline-none placeholder:text-slate-500 focus:ring-1 focus:ring-[#14B8A6]"
           />
 
           <button
-            onClick={sendMessage}
+            type="submit"
             disabled={!message.trim()}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#0F766E] transition hover:bg-[#134E4A] disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-lg bg-[#14B8A6] p-2.5 text-white transition hover:bg-[#0F766E] disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <Send size={18} />
+            <Send size={17} />
           </button>
 
         </div>
+      </form>
 
-      </div>
-
-    </aside>
+    </div>
   );
 }
 
