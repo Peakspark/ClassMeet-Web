@@ -69,6 +69,30 @@ export const createMeeting = async (req, res) => {
   }
 };
 
+// GET ALL MEETINGS FOR CURRENT USER
+export const getMeetings = async (req, res) => {
+  try {
+    const meetings = await Meeting.find({
+      participants: req.user.id
+    })
+      .populate("host", "name email role")
+      .populate("workspace", "name")
+      .sort({ scheduledAt: 1 });
+
+    return res.status(200).json({
+      success: true,
+      meetings
+    });
+  } catch (error) {
+    console.error("Get meetings error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+};
+
 
 // GET ONE MEETING
 export const getMeeting = async (req, res) => {

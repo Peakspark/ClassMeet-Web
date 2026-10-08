@@ -3,18 +3,22 @@ import { CalendarDays, Clock, Video, MoreHorizontal, Users, CheckCircle2, Clipbo
 // import Sidebar from "../components/Sidebar";
 // import Header from "../components/Header";
  import QuickActions from "../components/QuickActions";
-
- import { useState } from "react";
 import JoinMeetingModal from "../components/JoinMeetingModal";
 import CreateRoomModal from "../components/CreateRoomModal";
 import ScheduleMeetingModal from "../components/ScheduleMeetingModal";
 import NewTaskModal from "../components/NewTaskModal";
 import StartPollModal from "../components/StartPollModal";
 import { useNavigate } from "react-router-dom";
+import API_URL from "../api/api";
+import { useEffect, useState } from "react";
 
 function Dashboard() {
   const navigate = useNavigate();
-const [meetings, setMeetings] = useState( [
+
+  const [user, setUser] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  const [meetings, setMeetings] = useState( [
     {
       id: 1,
     roomId: "classmeet-team-standup",
@@ -43,6 +47,36 @@ const [meetings, setMeetings] = useState( [
       members: 6,
     },
   ]);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+        try {
+            const response = await fetch(`${API_URL}/api/auth/me`, {
+                method: "GET",
+                credentials: "include"
+            });
+
+            const data = await response.json();
+
+            console.log("Logged in user:", data);
+
+            if (!response.ok) {
+                console.log("User is not authenticated");
+                navigate("/login");
+                return;
+            }
+
+            setUser(data.user);
+
+        } catch (error) {
+            console.error("Error fetching user:", error);
+        } finally {
+            setLoadingUser(false);
+        }
+    };
+
+    fetchUser();
+}, [navigate]);
 
   const activities = [
     {
@@ -120,6 +154,28 @@ const [meetings, setMeetings] = useState( [
             onStartPoll={() => setShowStartPoll(true)}
           
           />
+
+          {/* Welcome User */}
+          <div className="mt-6 mb-4">
+              {loadingUser ? (
+                  <h1 className="text-2xl font-bold text-[#172033]">
+                      Loading...
+                  </h1>
+              ) : user ? (
+                  <h1 className="text-2xl font-bold text-[#172033]">
+                      Welcome, {user.name} 👋
+                  </h1>
+              ) : (
+                  <h1 className="text-2xl font-bold text-[#172033]">
+                      Welcome 👋
+                  </h1>
+              )}
+
+              <p className="text-gray-500 mt-1">
+                  Here's what's happening in your ClassMeet workspace.
+              </p>
+          </div>
+          
 
           {/* Main Dashboard */}
           <div className="mt-8 grid grid-cols-3 gap-6">
