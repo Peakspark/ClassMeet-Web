@@ -1,116 +1,104 @@
-export const initializeSocket = (io) => {
-  io.on("connection", (socket) => {
-    console.log("User connected:", socket.id);
+// WEBRTC MEETING
 
-    // WORKSPACE
+socket.on("join-meeting", (meetingId) => {
+  socket.join(`meeting:${meetingId}`);
 
-    // Join workspace
-    socket.on("join-workspace", (workspaceId) => {
-      socket.join(`workspace:${workspaceId}`);
+  console.log(
+    `Socket ${socket.id} joined meeting ${meetingId}`
+  );
 
-      socket.to(`workspace:${workspaceId}`).emit("user-joined", {
-        socketId: socket.id,
-      });
+  // Tell existing participants that a new user joined
+  socket.to(`meeting:${meetingId}`).emit(
+    "user-joined",
+    {
+      socketId: socket.id,
+    }
+  );
+});
 
-      console.log(`Socket ${socket.id} joined workspace ${workspaceId}`);
+
+// WEBRTC OFFER
+
+socket.on(
+  "offer",
+  ({ meetingId, targetSocketId, offer }) => {
+
+    console.log(
+      `Offer from ${socket.id} to ${targetSocketId}`
+    );
+
+    io.to(targetSocketId).emit("offer", {
+      socketId: socket.id,
+      offer,
     });
+  }
+);
 
-    // Leave workspace
-    socket.on("leave-workspace", (workspaceId) => {
-      socket.leave(`workspace:${workspaceId}`);
 
-      console.log(`Socket ${socket.id} left workspace ${workspaceId}`);
+// WEBRTC ANSWER
+
+socket.on(
+  "answer",
+  ({
+    meetingId,
+    targetSocketId,
+    answer,
+  }) => {
+
+    console.log(
+      `Answer from ${socket.id} to ${targetSocketId}`
+    );
+
+    io.to(targetSocketId).emit("answer", {
+      socketId: socket.id,
+      answer,
     });
-
-    // REAL-TIME MESSAGING
-
-    socket.on("send-message", ({ workspaceId, message }) => {
-      io.to(`workspace:${workspaceId}`).emit("receive-message", {
-        message,
-        sender: socket.id,
-      });
-    });
-    // PRESENCE
+  }
+);
 
 
-    socket.on("user-online", ({ workspaceId, userId }) => {
-      socket.join(`workspace:${workspaceId}`);
+// ICE CANDIDATE
 
-      io.to(`workspace:${workspaceId}`).emit("presence-update", {
-        userId,
-        status: "online",
-      });
-    });
+socket.on(
+  "ice-candidate",
+  ({
+    meetingId,
+    targetSocketId,
+    candidate,
+  }) => {
 
-    // WEBRTC MEETING
-
-    // Join meeting
-    socket.on("join-meeting", (meetingId) => {
-      socket.join(`meeting:${meetingId}`);
-
-      socket.to(`meeting:${meetingId}`).emit("user-joined", {
-        socketId: socket.id,
-      });
-
-      console.log(`Socket ${socket.id} joined meeting ${meetingId}`);
-    });
-
-    // WebRTC Offer
-    socket.on("offer", ({ meetingId, offer }) => {
-      socket.to(`meeting:${meetingId}`).emit("offer", {
-        socketId: socket.id,
-        offer,
-      });
-    });
-
-    // WebRTC Answer
-    socket.on("answer", ({ meetingId, answer, targetSocketId }) => {
-      io.to(targetSocketId).emit("answer", {
-        socketId: socket.id,
-        answer,
-      });
-    });
-
-    // ICE Candidate
-    socket.on("ice-candidate", ({ meetingId, candidate }) => {
-      socket.to(`meeting:${meetingId}`).emit("ice-candidate", {
+    io.to(targetSocketId).emit(
+      "ice-candidate",
+      {
         socketId: socket.id,
         candidate,
-      });
-    });
+      }
+    );
+  }
+);
 
-    // SCREEN SHARING
 
-    // Screen sharing started
-    socket.on("screen-share-started", ({ meetingId }) => {
-      socket.to(`meeting:${meetingId}`).emit("screen-share-started", {
+// LEAVE MEETING
+
+socket.on(
+  "leave-meeting",
+  (meetingId) => {
+
+    socket.leave(
+      `meeting:${meetingId}`
+    );
+
+    socket.to(
+      `meeting:${meetingId}`
+    ).emit(
+      "user-left",
+      {
         socketId: socket.id,
-      });
-    });
+      }
+    );
 
-    // Screen sharing stopped
-    socket.on("screen-share-stopped", ({ meetingId }) => {
-      socket.to(`meeting:${meetingId}`).emit("screen-share-stopped", {
-        socketId: socket.id,
-      });
-    });
-
-    // LEAVE MEETING
-
-    socket.on("leave-meeting", (meetingId) => {
-      socket.leave(`meeting:${meetingId}`);
-
-      socket.to(`meeting:${meetingId}`).emit("user-left", {
-        socketId: socket.id,
-      });
-
-      console.log(`Socket ${socket.id} left meeting ${meetingId}`);
-    });
-
-    // DISCONNECT
-
-    socket.on("disconnect", () => {
-      console.log("User disconnected:", socket.id);
-    });
-  });
-};
+    console.log(
+      `Socket ${socket.id} left meeting ${meetingId}`
+    );
+  }
+);
