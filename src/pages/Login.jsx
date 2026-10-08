@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {GraduationCap,Mail,Lock,Eye,EyeOff,ArrowRight,} from "lucide-react";
+import API_URL from "../api/api";
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -21,18 +22,43 @@ function Login() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.email || !formData.password) {
-      alert("Please enter email and password");
-      return;
+        alert("Please enter email and password");
+        return;
     }
 
-    console.log("Login Data:", formData);
+    try {
+        const response = await fetch(`${API_URL}/api/auth/login`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify({
+                email: formData.email,
+                password: formData.password
+            })
+        });
 
-    // Temporary frontend login
-    navigate("/");
+        const data = await response.json();
+
+        console.log("Backend Response:", data);
+
+        if (!response.ok) {
+            alert(data.message || "Login failed");
+            return;
+        }
+
+        alert("Login successful!");
+        navigate("/");
+
+    } catch (error) {
+        console.error("Login Error:", error);
+        alert("Unable to connect to backend");
+    }
   };
 
   return (

@@ -9,5 +9,7 @@
 			"path": "../course-selling-app/bin"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "ClassMeet-Web"
+	}
 }
