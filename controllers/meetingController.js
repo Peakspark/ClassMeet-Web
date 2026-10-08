@@ -259,3 +259,39 @@ export const endMeeting = async (req, res) => {
     });
   }
 };
+
+export const getMeetingByLink = async (req, res) => {
+  try {
+    const { meetingLink } = req.params;
+
+    const meeting = await Meeting.findOne({ meetingLink })
+      .populate("host", "name email")
+      .populate("workspace", "name");
+
+    if (!meeting) {
+      return res.status(404).json({
+        success: false,
+        message: "Meeting not found or link is invalid"
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      meeting: {
+        id: meeting._id,
+        title: meeting.title,
+        meetingLink: meeting.meetingLink,
+        host: meeting.host,
+        scheduledAt: meeting.scheduledAt
+      }
+    });
+
+  } catch (error) {
+    console.error("Get meeting by link error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+};
