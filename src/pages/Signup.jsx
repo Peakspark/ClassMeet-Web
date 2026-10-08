@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import API_URL from "../api/api";
 import {
   GraduationCap,
   User,
@@ -30,17 +31,50 @@ function Signup() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.name || !formData.email || !formData.password) {
-      alert("Please fill all fields");
-      return;
+        alert("Please fill all fields");
+        return;
     }
 
-    console.log("Signup Data:", formData);
+    if (formData.password.length < 8) {
+        alert("Password must be at least 8 characters");
+        return;
+    }
 
-    navigate("/");
+    try {
+        const response = await fetch(`${API_URL}/api/auth/signup`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify({
+                name: formData.name,
+                email: formData.email,
+                password: formData.password
+            })
+        });
+
+        const data = await response.json();
+
+        console.log("Signup Response:", data);
+
+        if (!response.ok) {
+            alert(data.message || "Signup failed");
+            return;
+        }
+
+        alert("Account created successfully!");
+
+        navigate("/login");
+
+    } catch (error) {
+        console.error("Signup Error:", error);
+        alert("Unable to connect to backend");
+    }
   };
 
   return (
