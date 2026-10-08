@@ -76,8 +76,34 @@ function Dashboard() {
     };
 
     fetchUser();
-}, [navigate]);
+  }, [navigate]);
 
+  useEffect(() => {
+    const fetchMeetings = async () => {
+        try {
+            const response = await fetch(`${API_URL}/api/meetings`, {
+                method: "GET",
+                credentials: "include"
+            });
+
+            const data = await response.json();
+
+            console.log("Meetings:", data);
+
+            if (!response.ok) {
+                console.error(data.message || "Failed to fetch meetings");
+                return;
+            }
+
+            setMeetings(data.meetings);
+
+        } catch (error) {
+            console.error("Error fetching meetings:", error);
+        }
+    };
+
+    fetchMeetings();
+  }, []);
   const activities = [
     {
       name: "Aman Kumar",
