@@ -81,9 +81,10 @@ export const login = async (req, res) => {
             });
         }
 
+        // 2. Normalize email
         const normalizedEmail = email.toLowerCase().trim();
 
-        // 2. Find user and explicitly include password
+        // 3. Find user
         const user = await User.findOne({
             email: normalizedEmail
         }).select("+password");
@@ -95,7 +96,7 @@ export const login = async (req, res) => {
             });
         }
 
-        // 3. Check password
+        // 4. Check password
         const isPasswordCorrect = await bcrypt.compare(
             password,
             user.password
@@ -108,7 +109,7 @@ export const login = async (req, res) => {
             });
         }
 
-        // 4. Create JWT
+        // 5. Create JWT
         const token = jwt.sign(
             {
                 userId: user._id.toString(),
@@ -120,15 +121,16 @@ export const login = async (req, res) => {
             }
         );
 
-        // 5. Store JWT in HTTP-only cookie
+        // 6. Store JWT in HTTP-only cookie
+        // Required for Vercel frontend -> Render backend
         res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
+            secure: true,
+            sameSite: "none",
             maxAge: 24 * 60 * 60 * 1000
         });
 
-        // 6. Send safe response
+        // 7. Send safe response
         return res.status(200).json({
             success: true,
             message: "Login successful",
