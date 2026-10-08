@@ -12,7 +12,6 @@ import VideoTile from "../components/VideoTile";
 import MeetingControls from "../components/MeetingControls";
 import MeetingChat from "../components/MeetingChat";
 import ParticipantsPanel from "../components/ParticipantsPanel";
-import API_URL from "../api/api";
 
 const SOCKET_URL = "https://classmeet-web.onrender.com";
 
@@ -26,10 +25,7 @@ function MeetingRoom() {
 
   const socketRef = useRef(null);
   const localStreamRef = useRef(null);
-
   const peerConnectionsRef = useRef({});
-  const remoteStreamsRef = useRef({});
-  const pendingIceCandidatesRef = useRef({});
 
   // =========================
   // STATE
@@ -55,7 +51,7 @@ function MeetingRoom() {
       return peerConnectionsRef.current[socketId];
     }
 
-    const peerConnection = new RTCPeerConnection({
+    const peer = new RTCPeerConnection({
       iceServers: [
         {
           urls: "stun:stun.l.google.com:19302",
@@ -66,38 +62,30 @@ function MeetingRoom() {
       ],
     });
 
-    // -------------------------
-    // Add local tracks
-    // -------------------------
-
+    // Add local camera + microphone
     if (localStreamRef.current) {
       localStreamRef.current
         .getTracks()
         .forEach((track) => {
-          peerConnection.addTrack(
+          peer.addTrack(
             track,
             localStreamRef.current
           );
         });
     }
 
-    // -------------------------
-    // Receive remote tracks
-    // -------------------------
-
-    peerConnection.ontrack = (event) => {
+    // Receive remote camera + microphone
+    peer.ontrack = (event) => {
       const stream = event.streams[0];
 
       if (!stream) return;
 
-      remoteStreamsRef.current[socketId] = stream;
-
       setRemoteStreams((prev) => {
-        const exists = prev.find(
+        const existing = prev.find(
           (item) => item.id === socketId
         );
 
-        if (exists) {
+        if (existing) {
           return prev.map((item) =>
             item.id === socketId
               ? {
@@ -119,24 +107,24 @@ function MeetingRoom() {
       });
     };
 
-    // -------------------------
-    // ICE candidate
-    // -------------------------
-
-    peerConnection.onicecandidate = (event) => {
+    // ICE candidates
+    peer.onicecandidate = (event) => {
       if (!event.candidate) return;
 
-      socketRef.current?.emit("ice-candidate", {
-        meetingId: roomId,
-        targetSocketId: socketId,
-        candidate: event.candidate,
-      });
+      socketRef.current?.emit(
+        "ice-candidate",
+        {
+          meetingId: roomId,
+          targetSocketId: socketId,
+          candidate: event.candidate,
+        }
+      );
     };
 
     peerConnectionsRef.current[socketId] =
-      peerConnection;
+      peer;
 
-    return peerConnection;
+    return peer;
   };
 
   // =========================
@@ -148,25 +136,21 @@ function MeetingRoom() {
 
     const startMeeting = async () => {
       try {
-        console.log(
-          "Starting meeting:",
-          roomId
-        );
-
-        // -------------------------
         // Camera + microphone
-        // -------------------------
-
         const stream =
-          await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: true,
-          });
+          await navigator.mediaDevices.getUserMedia(
+            {
+              video: true,
+              audio: true,
+            }
+          );
 
         if (!mounted) {
           stream
             .getTracks()
-            .forEach((track) => track.stop());
+            .forEach((track) =>
+              track.stop()
+            );
 
           return;
         }
@@ -174,69 +158,29 @@ function MeetingRoom() {
         localStreamRef.current = stream;
 
         setLocalStream(stream);
-
         setMicOn(true);
         setCameraOn(true);
 
         console.log(
-          "Camera/microphone ready"
+          "Camera and microphone ready"
         );
 
-        // -------------------------
-        // Optional meeting validation
-        // -------------------------
-
-        try {
-          const response = await fetch(
-            `${API_URL}/api/meetings/join/${roomId}`,
-            {
-              method: "GET",
-              credentials: "include",
-            }
-          );
-
-          const data = await response.json();
-
-          console.log(
-            "Meeting information:",
-            data
-          );
-
-          /*
-           * Don't block WebRTC if the backend
-           * validation endpoint isn't available.
-           *
-           * This keeps the currently working
-           * video call functional.
-           */
-
-          if (!response.ok) {
-            console.warn(
-              "Meeting validation failed:",
-              data.message
-            );
-          }
-        } catch (error) {
-          console.warn(
-            "Meeting validation request failed:",
-            error
-          );
-        }
-
-        // -------------------------
-        // Socket.IO
-        // -------------------------
+        // =========================
+        // CONNECT SOCKET
+        // =========================
 
         const socket = io(SOCKET_URL, {
-          transports: ["websocket", "polling"],
-          withCredentials: true,
+          transports: [
+            "websocket",
+            "polling",
+          ],
         });
 
         socketRef.current = socket;
 
-        // -------------------------
-        // Socket connected
-        // -------------------------
+        // =========================
+        // SOCKET CONNECTED
+        // =========================
 
         socket.on("connect", () => {
           console.log(
@@ -250,172 +194,130 @@ function MeetingRoom() {
           );
         });
 
-        // -------------------------
-        // USER JOINED
-        // -------------------------
+        // =========================
+        // NEW USER JOINED
+        // =========================
 
         socket.on(
           "user-joined",
           async ({ socketId }) => {
             try {
               console.log(
-                "New participant:",
+                "User joined:",
                 socketId
               );
 
-              const peerConnection =
+              const peer =
                 createPeerConnection(
                   socketId
                 );
 
               const offer =
-                await peerConnection.createOffer();
+                await peer.createOffer();
 
-              await peerConnection.setLocalDescription(
+              await peer.setLocalDescription(
                 offer
               );
 
               socket.emit("offer", {
                 meetingId: roomId,
-                targetSocketId: socketId,
+                targetSocketId:
+                  socketId,
                 offer,
               });
             } catch (error) {
               console.error(
-                "Offer creation error:",
+                "Offer error:",
                 error
               );
             }
           }
         );
 
-        // -------------------------
+        // =========================
         // RECEIVE OFFER
-        // -------------------------
+        // =========================
 
         socket.on(
           "offer",
-          async ({ socketId, offer }) => {
+          async ({
+            socketId,
+            offer,
+          }) => {
             try {
               console.log(
-                "Offer received from:",
+                "Offer received:",
                 socketId
               );
 
-              const peerConnection =
+              const peer =
                 createPeerConnection(
                   socketId
                 );
 
-              await peerConnection.setRemoteDescription(
+              await peer.setRemoteDescription(
                 new RTCSessionDescription(
                   offer
                 )
               );
 
-              // Add pending ICE candidates
-              const pending =
-                pendingIceCandidatesRef.current[
-                  socketId
-                ] || [];
-
-              for (const candidate of pending) {
-                try {
-                  await peerConnection.addIceCandidate(
-                    candidate
-                  );
-                } catch (error) {
-                  console.error(
-                    "Pending ICE error:",
-                    error
-                  );
-                }
-              }
-
-              delete pendingIceCandidatesRef.current[
-                socketId
-              ];
-
               const answer =
-                await peerConnection.createAnswer();
+                await peer.createAnswer();
 
-              await peerConnection.setLocalDescription(
+              await peer.setLocalDescription(
                 answer
               );
 
               socket.emit("answer", {
                 meetingId: roomId,
-                targetSocketId: socketId,
+                targetSocketId:
+                  socketId,
                 answer,
               });
             } catch (error) {
               console.error(
-                "Offer handling error:",
+                "Answer error:",
                 error
               );
             }
           }
         );
 
-        // -------------------------
+        // =========================
         // RECEIVE ANSWER
-        // -------------------------
+        // =========================
 
         socket.on(
           "answer",
-          async ({ socketId, answer }) => {
+          async ({
+            socketId,
+            answer,
+          }) => {
             try {
-              console.log(
-                "Answer received from:",
-                socketId
-              );
-
-              const peerConnection =
+              const peer =
                 peerConnectionsRef.current[
                   socketId
                 ];
 
-              if (!peerConnection) return;
+              if (!peer) return;
 
-              await peerConnection.setRemoteDescription(
+              await peer.setRemoteDescription(
                 new RTCSessionDescription(
                   answer
                 )
               );
-
-              const pending =
-                pendingIceCandidatesRef.current[
-                  socketId
-                ] || [];
-
-              for (const candidate of pending) {
-                try {
-                  await peerConnection.addIceCandidate(
-                    candidate
-                  );
-                } catch (error) {
-                  console.error(
-                    "Pending ICE error:",
-                    error
-                  );
-                }
-              }
-
-              delete pendingIceCandidatesRef.current[
-                socketId
-              ];
             } catch (error) {
               console.error(
-                "Answer handling error:",
+                "Remote description error:",
                 error
               );
             }
           }
         );
 
-        // -------------------------
+        // =========================
         // RECEIVE ICE
-        // -------------------------
+        // =========================
 
         socket.on(
           "ice-candidate",
@@ -424,86 +326,55 @@ function MeetingRoom() {
             candidate,
           }) => {
             try {
-              const peerConnection =
+              const peer =
                 peerConnectionsRef.current[
                   socketId
                 ];
 
-              if (!peerConnection) {
-                return;
-              }
-
-              const iceCandidate =
-                new RTCIceCandidate(
-                  candidate
-                );
-
-              /*
-               * If remote description isn't ready,
-               * save candidate for later.
-               */
+              if (!peer) return;
 
               if (
-                !peerConnection.remoteDescription
+                !peer.remoteDescription
               ) {
-                if (
-                  !pendingIceCandidatesRef
-                    .current[socketId]
-                ) {
-                  pendingIceCandidatesRef.current[
-                    socketId
-                  ] = [];
-                }
-
-                pendingIceCandidatesRef.current[
-                  socketId
-                ].push(iceCandidate);
-
                 return;
               }
 
-              await peerConnection.addIceCandidate(
-                iceCandidate
+              await peer.addIceCandidate(
+                new RTCIceCandidate(
+                  candidate
+                )
               );
             } catch (error) {
               console.error(
-                "ICE candidate error:",
+                "ICE error:",
                 error
               );
             }
           }
         );
 
-        // -------------------------
+        // =========================
         // USER LEFT
-        // -------------------------
+        // =========================
 
         socket.on(
           "user-left",
           ({ socketId }) => {
             console.log(
-              "Participant left:",
+              "User left:",
               socketId
             );
 
-            const peerConnection =
+            const peer =
               peerConnectionsRef.current[
                 socketId
               ];
 
-            if (peerConnection) {
-              peerConnection.close();
+            if (peer) {
+              peer.close();
             }
 
             delete peerConnectionsRef.current[
-              socketId
-            ];
-
-            delete remoteStreamsRef.current[
-              socketId
-            ];
-
-            delete pendingIceCandidatesRef.current[
               socketId
             ];
 
@@ -515,12 +386,6 @@ function MeetingRoom() {
             );
           }
         );
-
-        socket.on("disconnect", () => {
-          console.log(
-            "Socket disconnected"
-          );
-        });
       } catch (error) {
         console.error(
           "Unable to start meeting:",
@@ -528,7 +393,7 @@ function MeetingRoom() {
         );
 
         alert(
-          "Camera/Microphone permission is required."
+          "Please allow camera and microphone access."
         );
       }
     };
@@ -555,20 +420,18 @@ function MeetingRoom() {
 
       Object.values(
         peerConnectionsRef.current
-      ).forEach((connection) => {
-        connection.close();
+      ).forEach((peer) => {
+        peer.close();
       });
 
       peerConnectionsRef.current = {};
 
-      pendingIceCandidatesRef.current = {};
-
-      remoteStreamsRef.current = {};
-
       if (localStreamRef.current) {
         localStreamRef.current
           .getTracks()
-          .forEach((track) => track.stop());
+          .forEach((track) =>
+            track.stop()
+          );
 
         localStreamRef.current = null;
       }
@@ -576,7 +439,7 @@ function MeetingRoom() {
   }, [roomId]);
 
   // =========================
-  // TOGGLE MICROPHONE
+  // MICROPHONE
   // =========================
 
   const toggleMic = () => {
@@ -597,7 +460,7 @@ function MeetingRoom() {
   };
 
   // =========================
-  // TOGGLE CAMERA
+  // CAMERA
   // =========================
 
   const toggleCamera = async () => {
@@ -606,15 +469,13 @@ function MeetingRoom() {
 
     if (!stream) return;
 
-    let videoTrack =
+    const videoTrack =
       stream.getVideoTracks()[0];
 
-    // -------------------------
-    // CAMERA CURRENTLY ON
-    // Turn it OFF
-    // -------------------------
+    if (!videoTrack) return;
 
-    if (videoTrack && videoTrack.enabled) {
+    // CAMERA OFF
+    if (videoTrack.enabled) {
       videoTrack.enabled = false;
 
       setCameraOn(false);
@@ -622,33 +483,19 @@ function MeetingRoom() {
       return;
     }
 
-    // -------------------------
-    // CAMERA CURRENTLY OFF
-    // Turn it ON
-    // -------------------------
+    // CAMERA ON
+    if (
+      videoTrack.readyState === "live"
+    ) {
+      videoTrack.enabled = true;
 
+      setCameraOn(true);
+
+      return;
+    }
+
+    // Camera track ended
     try {
-      /*
-       * If the existing track still exists,
-       * simply enable it.
-       */
-
-      if (
-        videoTrack &&
-        videoTrack.readyState === "live"
-      ) {
-        videoTrack.enabled = true;
-
-        setCameraOn(true);
-
-        return;
-      }
-
-      /*
-       * If the old camera track ended,
-       * request a completely new camera track.
-       */
-
       const newStream =
         await navigator.mediaDevices.getUserMedia(
           {
@@ -656,105 +503,63 @@ function MeetingRoom() {
           }
         );
 
-      const newVideoTrack =
+      const newTrack =
         newStream.getVideoTracks()[0];
 
-      if (!newVideoTrack) {
-        throw new Error(
-          "Camera track could not be created"
-        );
-      }
+      if (!newTrack) return;
 
-      /*
-       * Add new track to local stream.
-       */
+      // Add new track
+      stream.addTrack(newTrack);
 
-      if (localStreamRef.current) {
-        localStreamRef.current.addTrack(
-          newVideoTrack
-        );
-      } else {
-        localStreamRef.current =
-          newStream;
-
-        setLocalStream(newStream);
-
-        return;
-      }
-
-      /*
-       * Replace the old camera track
-       * inside every WebRTC connection.
-       */
-
-      for (const peerConnection of Object.values(
+      // Replace track in WebRTC
+      for (const peer of Object.values(
         peerConnectionsRef.current
       )) {
         const sender =
-          peerConnection
+          peer
             .getSenders()
             .find(
               (s) =>
-                s.track &&
-                s.track.kind ===
-                  "video"
+                s.track?.kind ===
+                "video"
             );
 
         if (sender) {
           await sender.replaceTrack(
-            newVideoTrack
-          );
-        } else {
-          peerConnection.addTrack(
-            newVideoTrack,
-            localStreamRef.current
+            newTrack
           );
         }
       }
 
-      /*
-       * Stop old track if necessary.
-       */
+      videoTrack.stop();
 
-      if (
-        videoTrack &&
-        videoTrack !== newVideoTrack
-      ) {
-        videoTrack.stop();
-      }
-
-      setLocalStream(
-        localStreamRef.current
-      );
-
+      setLocalStream(stream);
       setCameraOn(true);
 
       console.log(
-        "Camera restarted successfully"
+        "Camera restarted"
       );
     } catch (error) {
       console.error(
-        "Unable to restart camera:",
+        "Camera restart failed:",
         error
       );
 
-      setCameraOn(false);
-
       alert(
-        "Unable to turn on camera. Please check camera permission."
+        "Could not turn camera on."
       );
     }
   };
 
   // =========================
-  // COPY MEETING LINK
+  // COPY LINK
   // =========================
 
   const copyMeetingLink = async () => {
-    try {
-      const link =
-        `${window.location.origin}/meeting/${roomId}`;
+    const link =
+      `${window.location.origin}/meeting/${roomId}`;
 
+    try {
       await navigator.clipboard.writeText(
         link
       );
@@ -764,14 +569,14 @@ function MeetingRoom() {
       );
     } catch (error) {
       console.error(
-        "Failed to copy meeting link:",
+        "Copy failed:",
         error
       );
     }
   };
 
   // =========================
-  // LEAVE MEETING
+  // LEAVE
   // =========================
 
   const leaveMeeting = () => {
@@ -788,8 +593,8 @@ function MeetingRoom() {
 
     Object.values(
       peerConnectionsRef.current
-    ).forEach((connection) => {
-      connection.close();
+    ).forEach((peer) => {
+      peer.close();
     });
 
     peerConnectionsRef.current = {};
@@ -797,7 +602,9 @@ function MeetingRoom() {
     if (localStreamRef.current) {
       localStreamRef.current
         .getTracks()
-        .forEach((track) => track.stop());
+        .forEach((track) =>
+          track.stop()
+        );
 
       localStreamRef.current = null;
     }
@@ -828,7 +635,8 @@ function MeetingRoom() {
         micOn: true,
         cameraOn: true,
         isLocal: false,
-        avatarColor: "bg-blue-500",
+        avatarColor:
+          "bg-blue-500",
       })
     ),
   ];
@@ -840,9 +648,7 @@ function MeetingRoom() {
   return (
     <div className="flex h-screen flex-col bg-[#111827] text-white">
 
-      {/* =========================
-          TOP BAR
-      ========================= */}
+      {/* HEADER */}
 
       <header className="flex items-center justify-between border-b border-white/10 px-6 py-4">
 
@@ -858,18 +664,16 @@ function MeetingRoom() {
 
         <div className="flex items-center gap-3">
 
-          {/* COPY LINK */}
-
           <button
-            onClick={copyMeetingLink}
+            onClick={
+              copyMeetingLink
+            }
             className="flex items-center gap-2 rounded-lg bg-[#14B8A6] px-4 py-2 text-sm font-semibold hover:bg-[#0F766E]"
           >
             <Copy size={16} />
 
             Copy Meeting Link
           </button>
-
-          {/* PARTICIPANTS */}
 
           <button
             onClick={() =>
@@ -884,8 +688,6 @@ function MeetingRoom() {
             Participants
           </button>
 
-          {/* CHAT */}
-
           <button
             onClick={() =>
               setShowChat(
@@ -894,21 +696,22 @@ function MeetingRoom() {
             }
             className="rounded-lg bg-white/10 p-2.5 hover:bg-white/20"
           >
-            <MessageSquare size={19} />
+            <MessageSquare
+              size={19}
+            />
           </button>
 
-          {/* MORE */}
-
           <button className="rounded-lg bg-white/10 p-2.5">
-            <MoreVertical size={19} />
+            <MoreVertical
+              size={19}
+            />
           </button>
 
         </div>
+
       </header>
 
-      {/* =========================
-          MAIN
-      ========================= */}
+      {/* MAIN */}
 
       <main className="relative flex flex-1 overflow-hidden">
 
@@ -918,7 +721,7 @@ function MeetingRoom() {
 
             <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
 
-              {/* LOCAL VIDEO */}
+              {/* MY VIDEO */}
 
               <VideoTile
                 stream={localStream}
@@ -929,12 +732,14 @@ function MeetingRoom() {
                 isLocal={true}
               />
 
-              {/* REMOTE VIDEOS */}
+              {/* REAL PARTICIPANTS ONLY */}
 
               {remoteStreams.map(
                 (participant) => (
                   <VideoTile
-                    key={participant.id}
+                    key={
+                      participant.id
+                    }
                     stream={
                       participant.stream
                     }
@@ -959,6 +764,7 @@ function MeetingRoom() {
             )}
 
           </div>
+
         </div>
 
         {/* PARTICIPANTS */}
@@ -988,15 +794,15 @@ function MeetingRoom() {
 
       </main>
 
-      {/* =========================
-          CONTROLS
-      ========================= */}
+      {/* CONTROLS */}
 
       <MeetingControls
         micOn={micOn}
         cameraOn={cameraOn}
         isSharing={false}
-        onToggleMic={toggleMic}
+        onToggleMic={
+          toggleMic
+        }
         onToggleCamera={
           toggleCamera
         }
